@@ -1,0 +1,19 @@
+{
+  "name": "common-micro-libs",
+  "version": "0.1.0",
+  "description": "",
+  "main": "",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/purtuga/common-micro-libs.git"
+  },
+  "author": "Paul T.",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/purtuga/common-micro-libs/issues"
+  },
+  "homepage": "https://github.com/purtuga/common-micro-libs"
+}
