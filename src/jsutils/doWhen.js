@@ -1,5 +1,5 @@
 define([
-    "./es-promise",
+    "./es6-promise",
     "./objectExtend"
 ], function(
     Promise,
