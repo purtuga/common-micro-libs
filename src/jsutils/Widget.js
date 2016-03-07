@@ -4,16 +4,12 @@ define([
     Compose
 ){
 
-    var
-    // Shortcuts
-    getComputedStyle = window.getComputedStyle,
-
     /**
      * Base class for a Widget
      *
      * @class Widget
      */
-    Widget = /** @lends Widget.prototype */{
+    var Widget = /** @lends Widget.prototype */{
 
         init: function(){
             var me = this;
@@ -88,42 +84,6 @@ define([
          */
         hide: function(){
             this.getEle().style.display = "none";
-        },
-
-        /**
-         * Fits the widget to the parent container, by placing a fixed height on
-         * one of the widget's element (default is the outer most element)
-         *
-         * @param {Number} [offset]
-         *  The additional Offset to be used in calculating the height. Could be
-         *  a negative number.
-         *
-         * @param {HTMLElement} [$adjustEle]
-         *  The Element that will have the height applied to. Defaults to the
-         *  element returned by `getEle`.
-         */
-        fitToParent: function(offset, $adjustEle){
-            if (!this.isVisible()) {
-                return;
-            }
-
-            var
-            me                  = this,
-            $ui                 = me.getEle(),
-            $scrollEle          = $adjustEle || $ui,
-            $parent             = $ui.parentElement,
-            parentComputedStyle = getComputedStyle($parent, null);
-
-            if (typeof offset !== "number") { offset = 0; }
-
-            // Add the parent element's padding into the offset
-            offset += ["padding-top", "padding-bottom"].reduce(function(pxCount, cssProperty){
-                return (pxCount += Number(parentComputedStyle.getPropertyValue(cssProperty).replace(/[a-zA-Z%]/g,"")));
-            }, 0);
-
-            $scrollEle.style.height = (
-                $parent.clientHeight - (($ui.offsetHeight - $scrollEle.offsetHeight) + offset)
-            ) + "px";
         },
 
         /**
