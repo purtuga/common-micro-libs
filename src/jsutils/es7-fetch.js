@@ -1,16 +1,49 @@
 /* jshint ignore:start */
 define(["./es6-promise"], function(Promise){
 
-    // see: https://github.com/purtuga/fetch
-    // see: https://github.com/purtuga/fetch
+    /**
+     * A polyfill for the proposed ECMAScript `fetch` API and associated classes.
+     * Provides a lowlevel interface for retrieving data from a server.
+     *
+     * Members of this namespace:
+     *
+     *  -   `fetchPolyfill.Headers`
+     *  -   `fetchPolyfill.Request`
+     *  -   `fetchPolyfill.Response`
+     *  -   `fetchPolyfill.fetch`
+     *
+     * @namespace fetchPolyfill
+     *
+     * @see https://github.com/purtuga/fetch
+     * @see https://github.com/github/fetch
+     *
+     * @example
+     *
+     * define(["es7-fetch"], function(fetchPolyfill){
+     *
+     *     var fetch = fetchPolyfill.fetch;
+     *
+     *     fetch("api/end/point", {
+     *         method:     "POST",
+     *         onProgress: opt.onProgress,
+     *         headers: {
+     *             'Content-Type': 'text/xml;charset=UTF-8',
+     *             'SOAPAction':   'http://schemas.microsoft.com/sharepoint/soap/CopyIntoItems'
+     *         },
+     *         body: '<?xml version="1.0" encoding="utf-8"?>' +
+     *         '<soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">' +
+     *         '<soap:Body><CopyIntoItems xmlns="http://schemas.microsoft.com/sharepoint"> + ' +
+     *         '<someContent></someContent>' +
+     *         '</soap:Body></soap:Envelope>'
+     *     }).then(function(response){
+     *         return response.text().then(function(xmlData){
+     *             ...
+     *         });
+     *     });
+     *
+     * });
+     */
 
-    // fetchPolyfill will have the following properties:
-    //
-    //    fetchPolyfill.Headers
-    //    fetchPolyfill.Request
-    //    fetchPolyfill.Response
-    //    fetchPolyfill.fetch
-    //
     var fetchPolyfill = function(self){
         self = self || Function('return this')(); // jshint ignore:line
         ['Headers', 'Request', 'Response', 'fetch'].forEach(function(prop){
