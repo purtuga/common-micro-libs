@@ -115,17 +115,6 @@ define([
                     }
                 });
             }
-        },
-
-        /**
-         * Destroys the EventEmitter instance which also destroys all references
-         * to set event listeners.
-         */
-        destroy: function(){
-            Compose.prototype.destroy.apply(this, arguments);
-            if (PRIVATE.has(this)) {
-                PRIVATE['delete'](this); // using ['delete'] because of IE
-            }
         }
     },
 
@@ -144,6 +133,13 @@ define([
                 }
             */
             PRIVATE.set(this, {});
+
+            // When this object is destroyed, remove all data
+            this.onDestroy(function(){
+                if (PRIVATE.has(this)) {
+                    PRIVATE['delete'](this); // using ['delete'] because of IE
+                }
+            });
         }
         return PRIVATE.get(this);
     };
