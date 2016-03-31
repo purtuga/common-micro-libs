@@ -9,7 +9,7 @@ define([
     /**
      * Composes new factory methods from a list of given Objects/Classes.
      *
-     * @constructor Compose
+     * @class Compose
      *
      * @example
      *

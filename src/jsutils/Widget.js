@@ -8,6 +8,8 @@ define([
      * Base class for a Widget
      *
      * @class Widget
+     * @extends Compose
+     *
      */
     var Widget = /** @lends Widget.prototype */{
 
@@ -94,6 +96,16 @@ define([
         appendTo: function(cntr){
             if (cntr && cntr.appendChild) {
                 cntr.appendChild(this.getEle());
+            }
+        },
+
+        /**
+         * Removes the Widget from it's parent (removes it from DOM)
+         */
+        detach: function(){
+            var ui = this.getEle();
+            if (ui && ui.parentNode) {
+                ui.parentNode.removeChild(ui);
             }
         }
     }; // end: Widget
