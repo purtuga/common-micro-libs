@@ -5,7 +5,7 @@ define(function () {
      *
      * @function domAddEventListener
      *
-     * @param {HTMLElement} el
+     * @param {HTMLElement} ele
      * @param {String} event
      * @param {Function} callback
      * @param {Boolean} [capture]
@@ -18,7 +18,7 @@ define(function () {
      * ...
      * listener.remove();
      */
-    return function (el, event, callback, capture) {
+    return function (ele, event, callback, capture) {
         ele.addEventListener(event, callback, capture);
         /**
          * A DOM Event listener.
