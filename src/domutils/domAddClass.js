@@ -4,8 +4,8 @@ define(function(){
      *
      * @function domAddClass
      *
-     * @param {HTMLElement}
-     * @param {String}
+     * @param {HTMLElement} el
+     * @param {String} cssClass
      */
     return function(el, cssClass){
         return el.classList.add(cssClass);
