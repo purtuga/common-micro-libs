@@ -60,7 +60,7 @@ define(function(){
                     tokenVal        = data[x][ opt.tokens[i] ] || '';
 
                     if (typeof tokenVal === "function") {
-                        tokenVal = tokenVal();
+                        tokenVal = tokenVal.call(data[x]);
                     }
 
                     item = item.replace("{{" + opt.tokens[i] + "}}", tokenVal);
