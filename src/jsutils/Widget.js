@@ -16,12 +16,13 @@ define([
         init: function(){
             var me = this;
             me.onDestroy(function(){
-                var $ui = me.getEle();
-                if ($ui && $ui.parentNode) {
-                    $ui.parentNode.removeChild($ui);
-                }
-                me.$ui = null;
+                destroy.call(me);
             });
+        },
+
+        destroy: function(){
+            destroy.call(this);
+            Compose.prototype.destroy.call(this);
         },
 
         /**
@@ -109,6 +110,14 @@ define([
             }
         }
     }; // end: Widget
+
+    function destroy() {
+        var $ui = this.getEle();
+        if ($ui && $ui.parentNode) {
+            $ui.parentNode.removeChild($ui);
+        }
+        this.$ui = null;
+    }
 
     Widget = Compose.extend(Widget);
 
