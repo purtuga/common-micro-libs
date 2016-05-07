@@ -1,8 +1,19 @@
 define([
-    "./Compose"
+    "./Compose",
+    "./dataStore",
+    "../domutils/domAddClass",
+    "../domutils/domRemoveClass",
+    //--------------------------------
+    "less!./styles/widget"
 ], function(
-    Compose
+    Compose,
+    dataStore,
+    domAddClass,
+    domRemoveClass
 ){
+    var
+    CSS_CLASS_BASE = "my-widget",
+    CSS_CLASS_HIDE = CSS_CLASS_BASE + "-hide",
 
     /**
      * Base class for a Widget
@@ -11,7 +22,7 @@ define([
      * @extends Compose
      *
      */
-    var Widget = /** @lends Widget.prototype */{
+    Widget = /** @lends Widget.prototype */{
 
         init: function(){
             var me = this;
@@ -79,24 +90,27 @@ define([
          * Makes widget UI visible
          */
         show: function(){
-            this.getEle().style.display = "block";
+            domRemoveClass(this.getEle(), CSS_CLASS_HIDE);
         },
 
         /**
          * Hides the widget UI
          */
         hide: function(){
-            this.getEle().style.display = "none";
+            domAddClass(this.getEle(), CSS_CLASS_HIDE);
         },
 
         /**
          * Appends the Widget to a given element.
          *
-         * @param {HTMLElement} cntr
+         * @param {HTMLElement|Widget} cntr
          */
         appendTo: function(cntr){
             if (cntr && cntr.appendChild) {
                 cntr.appendChild(this.getEle());
+            }
+            if (cntr && cntr.getEle) {
+                cntr.getEle().appendChild(this.getEle());
             }
         },
 
@@ -111,6 +125,9 @@ define([
         }
     }; // end: Widget
 
+    /**
+     * @private
+     */
     function destroy() {
         var $ui = this.getEle();
         if ($ui && $ui.parentNode) {
