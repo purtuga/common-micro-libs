@@ -947,11 +947,14 @@
 
       if (P) {
       //if (P && Object.prototype.toString.call(P.resolve()) === '[object Promise]' && !P.cast) {
+        lib$es6$promise$umd$$ES6Promise.Promise = P;
         return;
       }
 
       local.Promise = lib$es6$promise$promise$$default;
     }
+
+
     var lib$es6$promise$polyfill$$default = lib$es6$promise$polyfill$$polyfill;
 
     var lib$es6$promise$umd$$ES6Promise = {
@@ -959,15 +962,18 @@
       'polyfill': lib$es6$promise$polyfill$$default
     };
 
+    lib$es6$promise$polyfill$$default();
+
     if (typeof define === 'function' && define['amd']) {
       define(function() { return lib$es6$promise$umd$$ES6Promise.Promise; });
+
     } else if (typeof module !== 'undefined' && module['exports']) {
       module['exports'] = lib$es6$promise$umd$$ES6Promise;
+
     } else if (typeof this !== 'undefined') {
       this['ES6Promise'] = lib$es6$promise$umd$$ES6Promise;
     }
 
-    lib$es6$promise$polyfill$$default();
 
     /* jshint ignore:end */
 }).call(this);
