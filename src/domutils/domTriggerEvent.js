@@ -9,7 +9,7 @@ define([], function(){
      *
      * @returns {Event}
      */
-    function getNewGenericEvent(eventName){
+    function getNewGenericEvent(eventName, options){
         var event;
 
         try {
@@ -17,7 +17,7 @@ define([], function(){
 
         } catch(e) {
             event = document.createEvent('CustomEvent');
-            event.initCustomEvent(eventName, true, true);
+            event.initCustomEvent(eventName, true, true, options || {});
         }
         return event;
     }
@@ -36,7 +36,7 @@ define([], function(){
             event = new KeyboardEvent(eventName, options);
 
         } catch(e) {
-            event = getNewGenericEvent(eventName);
+            event = getNewGenericEvent(eventName, options);
         }
         return event;
     }
@@ -48,14 +48,14 @@ define([], function(){
      *
      * @see https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/MouseEvent
      */
-    function getNewMouseEvent(eventName){
+    function getNewMouseEvent(eventName, options){
         var event;
 
         try {
             event = new MouseEvent(eventName);
 
         } catch(e) {
-            event = getNewGenericEvent(eventName);
+            event = getNewGenericEvent(eventName, options);
         }
         return event;
 

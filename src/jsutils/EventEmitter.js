@@ -9,6 +9,10 @@ define([
     var
     PRIVATE = dataStore.create(),
 
+    arraySlice = Array.prototype.slice,
+
+    isFunction = function(fn){return typeof fn === "function";},
+
     /**
      * Emits events. Use it to extend other modules and thus add events to them.
      *
@@ -21,6 +25,9 @@ define([
          * Add a callback to a given event name
          *
          * @param {String} evName
+         *  The event name to be listened to. A `"*"` can be defined  as well
+         *  which will essentially listen to all events.
+         *
          * @param {Function} callback
          *  A callback function to listen to the event. The callback function
          *  can cancel any queued event callbacks by returning `true` (boolean).
@@ -28,15 +35,24 @@ define([
          * @return {EventListener}
          */
         on: function(evName, callback){
-            var setup = getSetup.call(this);
+            var listeners = getSetup.call(this).listeners,
+                callbackIndex;
 
-            if (!(evName in setup)) {
-                setup[evName] = [];
+            if (!(evName in listeners)) {
+                listeners[evName] = [];
             }
 
-            setup[evName].push(callback);
+            if (evName !== "*") {
+                listeners[evName].push(callback);
 
-            var callbackIndex = setup[evName].length - 1;
+            } else {
+                listeners[evName].push(function(triggeredEvName, args){
+
+                });
+
+            }
+
+            callbackIndex = listeners[evName].length - 1;
 
             /**
              * Event Listener
@@ -48,7 +64,7 @@ define([
              */
             return Object.create({
                 off: function(){
-                    setup[evName][callbackIndex] = null;
+                    listeners[evName][callbackIndex] = null;
                 }
             });
         },
@@ -61,12 +77,12 @@ define([
          *
          */
         off: function(evName, callback){
-            var setup = getSetup.call(this);
+            var listeners = getSetup.call(this).listeners;
 
-            if (evName in setup) {
-                setup[evName].some(function(thisCallback, index){
+            if (evName in listeners) {
+                listeners[evName].some(function(thisCallback, index){
                     if (thisCallback === callback) {
-                        setup[evName][index] = null;
+                        listeners[evName][index] = null;
                         return true;
                     }
                 });
@@ -94,27 +110,96 @@ define([
          * events can cancel the calling of queued callbacks by returning `true`
          * (boolean)
          *
-         * @param [String] evName
-         * @param [...*] callbackArgs
+         * @param {String} evName
+         *  The event name to be triggered. __NOTE__: can not be a `"*"` since it
+         *  holds special meaning.
+         *
+         * @param {...Function} callbackArgs
          */
         emit: function(evName){
-            var
-            setup   = getSetup.call(this),
-            args    = Array.prototype.slice.call(arguments, 1);
-
-            if (evName in setup) {
-                setup[evName].some(function(callback){
-                    if (typeof callback === "function") {
-                        var response = callback.apply(callback, args);
-
-                        // if a boolean true was returned, don't call any more
-                        // listeners.
-                        if (response && typeof response === "boolean") {
-                            return true;
-                        }
-                    }
-                });
+            if (evName === "*") {
+                try { console.warning("EventEmitter#emit(): can not emit to events to '*'"); } catch(e){} // jshint ignore:line
+                return;
             }
+
+            var
+            setup           = getSetup.call(this),
+            eventListeners  = setup.listeners,
+            eventPipes      = setup.pipes,
+            args            = arraySlice.call(arguments, 1);
+
+            if (evName in eventListeners || "*" in eventListeners) {
+                (eventListeners[evName] || [])
+                    .concat(eventListeners["*"] || [])
+                    .some(function(callback){
+                        if (isFunction(callback)) {
+                            var response = callback.apply(callback, args);
+
+                            // if a boolean true was returned, don't call any more
+                            // listeners.
+                            if (response && typeof response === "boolean") {
+                                return true;
+                            }
+                        }
+                    });
+            }
+
+            eventPipes.forEach(function(pipe){
+                if (isFunction(pipe)) {
+                    pipe(evName, args);
+                }
+            });
+        },
+
+        /**
+         * Emit the events from one instance of EventEmitter to another. Useful
+         * for when multiple components are used together as part of a larger
+         * component and have the need to emit events to a common EventEmitter.
+         *
+         * @param {EventEmitter} pipeTo
+         *  The EventEmitter to where events should be piped.
+         *
+         * @param {String} [prefix]
+         *  If defind, prefix will be added to any event emited. Example:
+         *  if defining `foo-` as the prefix, then every event emitted will
+         *  prefixed wth this value. So a `click` event on the source will
+         *  be piped as `foo-click`.
+         *
+         * @param {Boolean} [includeInstance=true]
+         *  When set to `true` (default), the piped event will include the source
+         *  instance as an additional argument to the event that is piped.
+         *
+         *  @return {EventListener}
+         */
+        pipe: function(pipeTo, prefix, includeInstance){
+            if (!pipeTo || !pipeTo.on) {
+                return null;
+            }
+            var pipes = getSetup.call(this).pipes,
+                callbackIndex;
+
+            pipes.push(function(triggeredEvName, args){
+                if (prefix) {
+                    args.unshift(prefix + triggeredEvName);
+
+                } else {
+                    args.unshift(triggeredEvName);
+                }
+
+                if (includeInstance || typeof includeInstance === "undefined") {
+                    args.push(this);
+                }
+
+                pipeTo.emit.apply(pipeTo, args);
+            }.bind(this));
+
+            callbackIndex = pipes.length - 1;
+
+            return Object.create({
+                off: function(){
+                    pipes[callbackIndex] = null;
+                }
+            });
         }
     },
 
@@ -126,13 +211,19 @@ define([
     getSetup = function(){
         if (!PRIVATE.has(this)) {
             /*
-                {
+                listeners: {
                     'evName': [
                         // callbacks
                     ]
-                }
+                },
+                pipes: [
+                    // pipeEmitters
+                ]
             */
-            PRIVATE.set(this, {});
+            PRIVATE.set(this, {
+                listeners:  {},
+                pipes:      []
+            });
 
             // When this object is destroyed, remove all data
             this.onDestroy(function(){
