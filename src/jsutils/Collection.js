@@ -37,6 +37,11 @@ define([
             };
 
             PRIVATE.set(this, inst);
+            this.length = inst.data.length;
+
+            this.onDestroy(function(){
+                PRIVATE["delete"](this);
+            });
         },
 
         /**
@@ -55,11 +60,22 @@ define([
          */
         size: function(){
             return PRIVATE.get(this).data.length;
+        },
+
+        /**
+         * Returns a member of the collection given an index (zero based).
+         *
+         * @param {Number} index
+         */
+        item: function(index){
+            if (typeof index !== "undefined") {
+                return PRIVATE.get(this).data[index];
+            }
         }
     };
 
     // Add all methods of Array.prototype to the collection
-    Object.keys(Array.prototype).forEach(function(method){
+    Object.getOwnPropertyNames(Array.prototype).forEach(function(method){
         if (method === "constructor" || typeof ArrayPrototype[method] !== "function") {
             return;
         }
