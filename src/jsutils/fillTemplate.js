@@ -1,4 +1,4 @@
-define(function(){
+define(["./getObjectPropValue"], function(getObjectPropValue){
 
     /**
      * An extremely lightweight template engine for replacing
@@ -8,6 +8,9 @@ define(function(){
      * @function fillTemplate
      *
      * @param {String|HTMLElement} template
+     *  Template should use double curly braces for data attributes.
+     *  These can be defined in dot notation for deep values in the data.
+     *
      * @param {Object|Array<Object>} data
      *  The Object containing the data that will be applied to the
      *  template. An array of objects can also be defined
@@ -57,7 +60,8 @@ define(function(){
 
                 for(i=0,j=opt.tokens.length; i<j; i++){
                     opt.tokens[i]   = opt.tokens[i].replace(/[\{\}]/g, "");
-                    tokenVal        = data[x][ opt.tokens[i] ] || '';
+                    tokenVal        = getObjectPropValue(data[x], opt.tokens[i]) || '';
+                    //tokenVal        = data[x][ opt.tokens[i] ] || '';
 
                     if (typeof tokenVal === "function") {
                         tokenVal = tokenVal.call(data[x]);

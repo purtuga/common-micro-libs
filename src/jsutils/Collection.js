@@ -20,7 +20,9 @@ define([
     ],
 
     /**
-     * An Array like object with the added ability to listen to events
+     * An Array like object with the added ability to listen to events.
+     * It supports all methods available to a normal array, like `forEach`,
+     * `some` and `reduce`
      *
      * @class Collection
      *
@@ -63,13 +65,22 @@ define([
         },
 
         /**
-         * Returns a member of the collection given an index (zero based).
+         * Returns a member of the collection given an index (zero based),
+         * or updates the item at a given index with a new value.
          *
          * @param {Number} index
+         * @param {*} [newValue]
          */
         item: function(index){
+            var data = PRIVATE.get(this).data,
+                args = Array.prototype.slice.call(arguments, 0);
+
             if (typeof index !== "undefined") {
-                return PRIVATE.get(this).data[index];
+                if (args.length === 1) {
+                    return data[index];
+                }
+
+                data[index] = args[1];
             }
         }
     };
