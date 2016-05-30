@@ -15,8 +15,8 @@ define(function(){
         if (!el || typeof styles !== "object"){
             return;
         }
-        Object.key(styles).forEach(function(prop){
-            el.styles[prop] = styles[prop];
+        Object.keys(styles).forEach(function(prop){
+            el.style[prop] = styles[prop];
         });
     };
 });

@@ -26,7 +26,10 @@ define([
          *
          * @param {String} evName
          *  The event name to be listened to. A `"*"` can be defined  as well
-         *  which will essentially listen to all events.
+         *  which will essentially listen to all events. Note that this special
+         *  event however, will change the arguments passed to the callback by
+         *  pre-pending the Event Name (`String`) and appending the
+         *  Component instance.
          *
          * @param {Function} callback
          *  A callback function to listen to the event. The callback function
@@ -42,16 +45,7 @@ define([
                 listeners[evName] = [];
             }
 
-            if (evName !== "*") {
-                listeners[evName].push(callback);
-
-            } else {
-                listeners[evName].push(function(triggeredEvName, args){
-
-                });
-
-            }
-
+            listeners[evName].push(callback);
             callbackIndex = listeners[evName].length - 1;
 
             /**
@@ -126,22 +120,32 @@ define([
             setup           = getSetup.call(this),
             eventListeners  = setup.listeners,
             eventPipes      = setup.pipes,
-            args            = arraySlice.call(arguments, 1);
+            args            = arraySlice.call(arguments, 1),
+            isCanceled      = false,
+            callbackHandler = function(callback){
+                if (isFunction(callback)) {
+                    var response = callback.apply(callback, args);
+
+                    // if a boolean true was returned, don't call any more
+                    // listeners.
+                    if (response && typeof response === "boolean") {
+                        isCanceled = true;
+                        return true;
+                    }
+                }
+            };
 
             if (evName in eventListeners || "*" in eventListeners) {
-                (eventListeners[evName] || [])
-                    .concat(eventListeners["*"] || [])
-                    .some(function(callback){
-                        if (isFunction(callback)) {
-                            var response = callback.apply(callback, args);
+                // Regular event listeners
+                (eventListeners[evName] || []).some(callbackHandler);
 
-                            // if a boolean true was returned, don't call any more
-                            // listeners.
-                            if (response && typeof response === "boolean") {
-                                return true;
-                            }
-                        }
-                    });
+                if (!isCanceled) {
+                    // Special event "*": pass event name and instance
+                    args = arraySlice.call(arguments, 0);
+                    args.push(this);
+
+                    (eventListeners["*"] || []).some(callbackHandler);
+                }
             }
 
             eventPipes.forEach(function(pipe){
