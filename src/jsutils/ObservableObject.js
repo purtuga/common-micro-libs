@@ -15,10 +15,17 @@ define([
     objectHasOwnProperty    = Object.prototype.hasOwnProperty,
 
     /**
-     * Adds the ability to observe property values on an object
+     * Adds the ability to observe `Object` property values for changes.
+     * Uses an internal `EventEmitter` instance to list and trigger events,
+     * and `Object.defineProperty` getter/setters to setup watchers on
+     * property values.
      *
-     * @class Observable
-     * @extends EventEmitter
+     * Currently has no support for addition or deletion from the object,
+     * but with the ES7 forth coming Proxy functionality, that will be
+     * added.
+     *
+     * @class ObservableObject
+     * @extends Compose
      *
      * @example
      *
@@ -28,7 +35,7 @@ define([
      *      last: "tavares"
      * };
      *
-     * Observable.mixin(myObj);
+     * ObservableObject.mixin(myObj);
      *
      * myObj.on("first", function(newValue, oldValue){
      *      alert("first name was changed");
@@ -37,7 +44,7 @@ define([
      * @example
      *
      * // Used as part of a class prototype
-     * var MyModel = Compose.extend(Observable);
+     * var MyModel = Compose.extend(ObservableObject);
      *
      * var user = MyModel.create({
      *      first: "paul",
@@ -49,7 +56,7 @@ define([
      * });
      *
      */
-    Observable = /** @lends Observable.prototype */{
+    ObservableObject = /** @lends ObservableObject.prototype */{
         /**
          * Add a callback to changes on a given property
          *
@@ -104,7 +111,7 @@ define([
      * Returns the private Instance data for this object
      *
      * @private
-     * @this Observable
+     * @this ObservableObject
      *
      * @return {EventEmitter}
      */
@@ -131,7 +138,7 @@ define([
      * and if not, it sets one up for it.
      *
      * @private
-     * @this Observable
+     * @this ObservableObject
      *
      * @param {String} prop
      */
@@ -201,29 +208,29 @@ define([
 
             } else {
                 try {
-                    console.log("Observable(Error) Unable to watch property [" + prop + "]");
+                    console.log("ObservableObject(Error) Unable to watch property [" + prop + "]");
                 } catch(e){}
             }
         }
     };
 
-    Observable = Compose.extend(Observable);
+    ObservableObject = Compose.extend(ObservableObject);
 
     /**
-     * Adds Observable capabilities to an object.
+     * Adds ObservableObject capabilities to an object.
      *
-     * @method Observable.mixin
+     * @method ObservableObject.mixin
      *
      * @param {Object} obj
      *
      * @return {Object}
      *  Same object that was given on input will be returned
      */
-    Observable.mixin = function(obj){
+    ObservableObject.mixin = function(obj){
         if (obj) {
-            Object.keys(Observable.prototype).forEach(function(method){
+            Object.keys(ObservableObject.prototype).forEach(function(method){
                 objectDefineProperty(obj, method, {
-                    value:          Observable.prototype[method],
+                    value:          ObservableObject.prototype[method],
                     enumerable:     false,
                     configurable:   true
                 });
@@ -232,5 +239,5 @@ define([
         return obj;
     };
 
-    return Observable;
+    return ObservableObject;
 });
