@@ -30,6 +30,7 @@ define([
     },
 
     objectCreate    = Object.create,
+    objectDefineProp= Object.defineProperty,
 
     instData        = dataStore.stash,
 
@@ -80,8 +81,9 @@ define([
          */
         onDestroy: function(callback){
             if (!this.__onDestroy) {
-                this.__onDestroy = function(){};
+                objectDefineProp(this, "__onDestroy", {value: function(){}});
             }
+
             if ("function" === typeof callback) {
                 var
                 key                 = this.__onDestroy,

@@ -29,6 +29,12 @@ define(function(){
         var isObjArray      = isArray(paramObj),
             keyValuePairs   = [];
 
+        // If this is na array and we have no keyPrefix, then
+        // create one... We need something to attach the array to.
+        if (isObjArray && !keyPrefix) {
+            keyPrefix = "_";
+        }
+
         // Process either the Object or Array that was passed on input
         (isObjArray ? paramObj : Object.keys(paramObj)).forEach(function (paramName, index){
             if (isObjArray) {
@@ -51,7 +57,7 @@ define(function(){
                 keyValuePairs.push(toUrlParams(paramValue, urlParamKey));
 
             } else {
-                keyValuePairs.push(encodeURIComponent(urlParamKey)+"="+encodeURIComponent(paramValue));
+                keyValuePairs.push(uriEncode(urlParamKey) + "=" + uriEncode(paramValue));
             }
         });
 
