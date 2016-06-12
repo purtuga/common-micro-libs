@@ -229,11 +229,13 @@ define([
     ObservableObject.mixin = function(obj){
         if (obj) {
             Object.keys(ObservableObject.prototype).forEach(function(method){
-                objectDefineProperty(obj, method, {
-                    value:          ObservableObject.prototype[method],
-                    enumerable:     false,
-                    configurable:   true
-                });
+                if (!(method in obj) || obj[method] !== ObservableObject.prototype[method]) {
+                    objectDefineProperty(obj, method, {
+                        value:          ObservableObject.prototype[method],
+                        enumerable:     false,
+                        configurable:   true
+                    });
+                }
             });
         }
         return obj;
