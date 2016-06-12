@@ -127,7 +127,7 @@ define([
                     delete instData.watched;
                     PRIVATE.delete(this);
                     instData.destroy();
-                });
+                }.bind(this));
             }
         }
         return PRIVATE.get(this);

@@ -234,7 +234,7 @@ define([
                 if (PRIVATE.has(this)) {
                     PRIVATE['delete'](this); // using ['delete'] because of IE
                 }
-            });
+            }.bind(this));
         }
         return PRIVATE.get(this);
     };
