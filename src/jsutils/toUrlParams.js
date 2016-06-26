@@ -44,12 +44,7 @@ define(function(){
             var paramValue  = paramObj[paramName],
                 urlParamKey;
 
-            if (isArray(paramObj)) {
-                urlParamKey = keyPrefix ? keyPrefix + "["+ paramName + "]" : paramName;
-
-            } else {
-                urlParamKey = keyPrefix ? keyPrefix + "." + paramName : paramName;
-            }
+            urlParamKey = keyPrefix ? keyPrefix + "["+ paramName + "]" : paramName;
 
             // if there is more to be done on this param, then call
             // toUrlparams() again
