@@ -6,7 +6,7 @@ define(function(){
      * element.
      *
      * @param {HTMLElement} ele
-     *  The element whose parent will be used in the calculation of the height;
+     *  The element whose parent will be used in the calculation of the height
      *
      * @param {Number} [offset]
      *  The additional Offset to be used in calculating the height. Could be
@@ -24,11 +24,10 @@ define(function(){
         }
 
         var
-            me                  = this,
-            $ui                 = ele,
-            $scrollEle          = $adjustEle || $ui,
-            $parent             = $ui.parentElement,
-            parentComputedStyle = window.getComputedStyle($parent, null);
+        $ui                 = ele,
+        $scrollEle          = $adjustEle || $ui,
+        $parent             = $ui.parentElement,
+        parentComputedStyle = window.getComputedStyle($parent, null);
 
         if (typeof offset !== "number") { offset = 0; }
 

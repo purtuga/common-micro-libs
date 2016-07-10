@@ -145,6 +145,9 @@ define([
                     args.push(this);
 
                     (eventListeners["*"] || []).some(callbackHandler);
+
+                    // set args back to original
+                    args = arraySlice.call(arguments, 1);
                 }
             }
 
@@ -161,10 +164,10 @@ define([
          * component and have the need to emit events to a common EventEmitter.
          *
          * @param {EventEmitter} pipeTo
-         *  The EventEmitter to where events should be piped.
+         *  The EventEmitter instance object to where events should be piped.
          *
          * @param {String} [prefix]
-         *  If defind, prefix will be added to any event emited. Example:
+         *  If defined, prefix will be added to any event emited. Example:
          *  if defining `foo-` as the prefix, then every event emitted will
          *  prefixed wth this value. So a `click` event on the source will
          *  be piped as `foo-click`.
