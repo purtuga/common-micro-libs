@@ -45,8 +45,10 @@ function(
      *
      * The keyboard action that will be applies are:
      *
-     * -    Up Arrow: move focus to prior selection
-     * -    Down Arrow: move focus to prior selection
+     * -    UP arrow key: move focus to prior selection
+     * -    DOWN arrow key: move focus to prior selection
+     * -    ENTER key: Add `selectedClass` to element
+     * -    ESC key: remove `focusClass` from current element
      *
      * @class DomKeyboardInteraction
      * @extends EventEmitter
@@ -75,6 +77,11 @@ function(
      *
      * @param {Boolean} [options.stopPropagation=true]
      *  If se to `true`, `stopPropagation` method of the event will be called.
+     *
+     * @fires DomKeyboardInteraction#keyDown
+     * @fires DomKeyboardInteraction#keyUp
+     * @fires DomKeyboardInteraction#keyEnter
+     * @fires DomKeyboardInteraction#keyEsc
      *
      * @example
      *
@@ -124,24 +131,55 @@ function(
 
                 switch (key) {
                     case KEY_DOWN:
+                        /**
+                         * User clicked the DOWN arrow key.
+                         *
+                         * @event DomKeyboardInteraction#keyDown
+                         *
+                         * @type {KeyboardEvent}
+                         * @property {HTMLElement|undefined} focusElement
+                         */
                         eventName = "keyDown";
                         focusEle = this.focusNext();
                         break;
 
                     case KEY_UP:
+                        /**
+                         * User clicked the UP arrow key.
+                         *
+                         * @event DomKeyboardInteraction#keyUp
+                         *
+                         * @type {KeyboardEvent}
+                         * @property {HTMLElement|undefined} focusElement
+                         */
                         eventName = "keyUp";
                         focusEle = this.focusPrevious();
                         break;
 
                     case KEY_ENTER:
+                        /**
+                         * User clicked the ENTER key.
+                         *
+                         * @event DomKeyboardInteraction#keyEnter
+                         *
+                         * @type {KeyboardEvent}
+                         * @property {HTMLElement|undefined} focusElement
+                         */
                         eventName = "keyEnter";
                         focusEle = toggleSelected.call(this);
                         break;
 
                     case KEY_ESC:
+                        /**
+                         * User clicked the ESC key.
+                         *
+                         * @event DomKeyboardInteraction#keyEsc
+                         *
+                         * @type {KeyboardEvent}
+                         * @property {HTMLElement|undefined} focusElement
+                         */
                         eventName = "keyEsc";
-                        // FIXME: complete ESC key - what should we do?
-
+                        focusEle = this.resetFocus();
                         break;
                 }
 
@@ -272,13 +310,17 @@ function(
         },
 
         /**
-         * Resets the focus
+         * Resets the focus.
+         *
+         * @return {HTMLElement}
+         *  If an element had focus, it will be returned.
          */
         resetFocus: function(){
             var focusedEle = this.getFocusEle();
             if (focusedEle) {
                 PRIVATE.get(this).removeFocus(focusedEle);
             }
+            return focusedEle;
         },
 
         /**
