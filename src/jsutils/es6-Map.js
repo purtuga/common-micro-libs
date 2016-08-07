@@ -1,21 +1,23 @@
-define(function(){
-    //-------------------------------------
-    // POLYFILL FOR ES6 MAP
-    // http://devdocs.io/javascript/global_objects/map
-    //-------------------------------------
-    // Code below as taken from es6-shim project by Paul Millr. It was a
-    // copy and paste to grab only the code associated with Map.
-    //
-    // For more details:
-    // https://github.com/paulmillr/es6-shim/blob/master/es6-shim.js
-    // https://github.com/paulmillr/es6-shim
-    //
-    // @license es6-shim Copyright 2013-2016 by Paul Miller (http://paulmillr.com) and contributors,  MIT License
-    //
-    // es6-shim: v0.35.1
-    // see https://github.com/paulmillr/es6-shim/blob/0.35.1/LICENSE
-    // Details and documentation:
-    // https://github.com/paulmillr/es6-shim/
+var MapPolyfill = (function(){
+
+
+//-------------------------------------
+// POLYFILL FOR ES6 MAP
+// http://devdocs.io/javascript/global_objects/map
+//-------------------------------------
+// Code below as taken from es6-shim project by Paul Millr. It was a
+// copy and paste to grab only the code associated with Map.
+//
+// For more details:
+// https://github.com/paulmillr/es6-shim/blob/master/es6-shim.js
+// https://github.com/paulmillr/es6-shim
+//
+// @license es6-shim Copyright 2013-2016 by Paul Miller (http://paulmillr.com) and contributors,  MIT License
+//
+// es6-shim: v0.35.1
+// see https://github.com/paulmillr/es6-shim/blob/0.35.1/LICENSE
+// Details and documentation:
+// https://github.com/paulmillr/es6-shim/
 
     var getGlobal = function () {
         /* global self, window, global */
@@ -30,12 +32,12 @@ define(function(){
 
     var globals = getGlobal();
 
-    //[PT] use global if one exists
+//[PT] use global if one exists
     if (typeof globals.Map !== "undefined") {
         return globals.Map;
     }
 
-    // ------------------- START POLYFILL ---------------------------------
+// ------------------- START POLYFILL ---------------------------------
 
     var _forEach = Function.call.bind(Array.prototype.forEach);
     var _toString = Function.call.bind(Object.prototype.toString);
@@ -69,8 +71,8 @@ define(function(){
         return Object.create ? Object.create(null) : {};
     };
 
-    // taken directly from https://github.com/ljharb/is-arguments/blob/master/index.js
-    // can be replaced with require('is-arguments') if we ever use a build process instead
+// taken directly from https://github.com/ljharb/is-arguments/blob/master/index.js
+// can be replaced with require('is-arguments') if we ever use a build process instead
     var isStandardArguments = function isArguments(value) {
         return _toString(value) === '[object Arguments]';
     };
@@ -85,13 +87,13 @@ define(function(){
     var isArguments = isStandardArguments(arguments) ? isStandardArguments : isLegacyArguments;
 
     var numberIsNaN = Number.isNaN || function isNaN(value) {
-        // NaN !== NaN, but they are identical.
-        // NaNs are the only non-reflexive value, i.e., if x !== x,
-        // then x is NaN.
-        // isNaN is broken: it converts its argument to number, so
-        // isNaN('foo') => true
-        return value !== value;
-    };
+            // NaN !== NaN, but they are identical.
+            // NaNs are the only non-reflexive value, i.e., if x !== x,
+            // then x is NaN.
+            // isNaN is broken: it converts its argument to number, so
+            // isNaN('foo') => true
+            return value !== value;
+        };
 
     var arePropertyDescriptorsSupported = function () {
         // if Object.defineProperty exists but throws, it's IE 8
@@ -116,8 +118,8 @@ define(function(){
         }
     };
 
-    // Our ArrayIterator is private; see
-    // https://github.com/paulmillr/es6-shim/issues/252
+// Our ArrayIterator is private; see
+// https://github.com/paulmillr/es6-shim/issues/252
     var ArrayIterator = function (array, kind) {
         this.i = 0;
         this.array = array;
@@ -134,16 +136,16 @@ define(function(){
     };
 
 
-    // This is a private name in the es6 spec, equal to '[Symbol.iterator]'
-    // we're going to use an arbitrary _-prefixed name to make our shims
-    // work properly with each other, even though we don't have full Iterator
-    // support.  That is, `Array.from(map.keys())` will work, but we don't
-    // pretend to export a "real" Iterator interface.
+// This is a private name in the es6 spec, equal to '[Symbol.iterator]'
+// we're going to use an arbitrary _-prefixed name to make our shims
+// work properly with each other, even though we don't have full Iterator
+// support.  That is, `Array.from(map.keys())` will work, but we don't
+// pretend to export a "real" Iterator interface.
     var $iterator$ = Type.symbol(Symbol.iterator) ? Symbol.iterator : '_es6-shim iterator_';
 
-    // Firefox ships a partial implementation using the name @@iterator.
-    // https://bugzilla.mozilla.org/show_bug.cgi?id=907077#c14
-    // So use that name if we detect it.
+// Firefox ships a partial implementation using the name @@iterator.
+// https://bugzilla.mozilla.org/show_bug.cgi?id=907077#c14
+// So use that name if we detect it.
     if (globals.Set && typeof new globals.Set()['@@iterator'] === 'function') {
         $iterator$ = '@@iterator';
     }
@@ -275,9 +277,9 @@ define(function(){
         }
     };
 
-    // Given an argument x, it will return an IteratorResult object,
-    // with value set to x and done to false.
-    // Given no arguments, it will return an iterator completion object.
+// Given an argument x, it will return an IteratorResult object,
+// with value set to x and done to false.
+// Given no arguments, it will return an iterator completion object.
     var iteratorResult = function (x) {
         return { value: x, done: arguments.length === 0 };
     };
@@ -372,8 +374,8 @@ define(function(){
         }
     };
 
-    // Define configurable, writable and non-enumerable props
-    // if they don’t exist.
+// Define configurable, writable and non-enumerable props
+// if they don’t exist.
     var defineProperties = function (object, map, forceOverride) {
         _forEach(keys(map), function (name) {
             var method = map[name];
@@ -381,9 +383,9 @@ define(function(){
         });
     };
 
-    // Map and Set require a true ES5 environment
-    // Their fast path also requires that the environment preserve
-    // property insertion order, which is not guaranteed by the spec.
+// Map and Set require a true ES5 environment
+// Their fast path also requires that the environment preserve
+// property insertion order, which is not guaranteed by the spec.
     var testOrder = function (a) {
         var b = keys(_reduce(a, function (o, k) {
             o[k] = true;
@@ -392,7 +394,7 @@ define(function(){
         return a.join(':') === b.join(':');
     };
     var preservesInsertionOrder = testOrder(['z', 'a', 'bb']);
-    // some engines (eg, Chrome) only preserve insertion order for string keys
+// some engines (eg, Chrome) only preserve insertion order for string keys
     var preservesNumericInsertionOrder = testOrder(['z', 1, 'a', '3', 2]);
 
     var fastkey = function fastkey(key) {
@@ -665,5 +667,6 @@ define(function(){
         return MapShim;
     }());
 
-    return Map;
-});
+})();
+
+export default MapPolyfill;

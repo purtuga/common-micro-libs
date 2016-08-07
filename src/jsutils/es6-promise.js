@@ -9,6 +9,8 @@
  *
  */
 
+var polyfill;
+
 /*!
  * @overview es6-promise - a tiny implementation of Promises/A+.
  * @copyright Copyright (c) 2014 Yehuda Katz, Tom Dale, Stefan Penner and contributors (Conversion to ES6 API by Jake Archibald)
@@ -957,7 +959,7 @@
 
     var lib$es6$promise$polyfill$$default = lib$es6$promise$polyfill$$polyfill;
 
-    var lib$es6$promise$umd$$ES6Promise = {
+    var lib$es6$promise$umd$$ES6Promise = polyfill = {
       'Promise': lib$es6$promise$promise$$default,
       'polyfill': lib$es6$promise$polyfill$$default
     };
@@ -968,7 +970,7 @@
       define(function() { return lib$es6$promise$umd$$ES6Promise.Promise; });
 
     } else if (typeof module !== 'undefined' && module['exports']) {
-      module['exports'] = lib$es6$promise$umd$$ES6Promise;
+      module['exports'] = lib$es6$promise$umd$$ES6Promise.Promise;
 
     } else if (typeof this !== 'undefined') {
       this['ES6Promise'] = lib$es6$promise$umd$$ES6Promise;
@@ -978,3 +980,4 @@
     /* jshint ignore:end */
 }).call(this);
 
+export default polyfill.Promise;

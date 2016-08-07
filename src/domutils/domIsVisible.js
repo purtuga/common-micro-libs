@@ -1,12 +1,12 @@
-define(function(){
-    /**
-     * Checks if a given HTML Element is visible
-     *
-     * @param {HTMLElement} el
-     *
-     * @return {Boolean}
-     */
-    return function(el){
-        return !!( el.offsetWidth || el.offsetHeight || el.getClientRects().length );
-    };
-});
+/**
+ * Checks if a given HTML Element is visible
+ *
+ * @function domIsVisible
+ *
+ * @param {HTMLElement} el
+ *
+ * @return {Boolean}
+ */
+export default function domIsVisible(el){
+    return !!( el.offsetWidth || el.offsetHeight || el.getClientRects().length );
+}

@@ -1,26 +1,21 @@
-define([
-    "./objectExtend",
-    "./dataStore"
-], function(
-    objectExtend,
-    dataStore
-){
+import objectExtend from "./objectExtend"
+import dataStore    from "./dataStore"
 
-    /**
-     * Composes new factory methods from a list of given Objects/Classes.
-     *
-     * @class Compose
-     *
-     * @example
-     *
-     * var Widget = Compose.create(Model, Events);
-     *
-     * myWidget = Widget.create();
-     *
-     */
+/**
+ * Composes new factory methods from a list of given Objects/Classes.
+ *
+ * @class Compose
+ *
+ * @example
+ *
+ * var Widget = Compose.create(Model, Events);
+ *
+ * myWidget = Widget.create();
+ *
+ */
 
-    var
-    // return all KEYs of an object, even those that are not iterable
+var
+// return all KEYs of an object, even those that are not iterable
     objectKeys  = function(prototype){
         var k, keys = [];
         for (k in prototype){
@@ -34,7 +29,7 @@ define([
 
     instData        = dataStore.stash,
 
-    // Base instance methods for Compose'd object
+// Base instance methods for Compose'd object
     baseMethods = /** @lends Compose.prototype */{
 
         /**
@@ -52,8 +47,8 @@ define([
          */
         destroy:    function(){
             var
-            hasCallbacks = this.__onDestroy,
-            onDestroyCallbacks;
+                hasCallbacks = this.__onDestroy,
+                onDestroyCallbacks;
 
             if (hasCallbacks) {
                 onDestroyCallbacks = instData.get(hasCallbacks);
@@ -86,8 +81,8 @@ define([
 
             if ("function" === typeof callback) {
                 var
-                key                 = this.__onDestroy,
-                onDestroyCallbacks  = instData.get(key);
+                    key                 = this.__onDestroy,
+                    onDestroyCallbacks  = instData.get(key);
 
                 if (!onDestroyCallbacks) {
                     onDestroyCallbacks = [];
@@ -108,8 +103,8 @@ define([
          */
         extend: function(){
             var
-            args    = Array.prototype.slice.call(arguments),
-            Factory = function(){};
+                args    = Array.prototype.slice.call(arguments),
+                Factory = function(){};
 
             Factory.prototype = args.reduce(function(newProto, obj){
                 if (obj) {
@@ -160,9 +155,7 @@ define([
 
     Compose = function(){};
 
-    Compose.prototype = objectCreate(baseMethods);
-    objectExtend(Compose, staticMethods);
+Compose.prototype = objectCreate(baseMethods);
+objectExtend(Compose, staticMethods);
 
-    return Compose;
-
-});
+export default Compose;

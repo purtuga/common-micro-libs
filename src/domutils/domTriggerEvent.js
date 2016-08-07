@@ -1,93 +1,92 @@
-define([], function(){
-
-    var keyboardEvents  = ['keyup', 'keydown', 'keypress'],
-        mouseEvents     = ['mouseup', 'mousedown'];
+var keyboardEvents  = ['keyup', 'keydown', 'keypress'],
+    mouseEvents     = ['mouseup', 'mousedown'];
 
 
-    /**
-     * @private
-     *
-     * @returns {Event}
-     */
-    function getNewGenericEvent(eventName, options){
-        var event;
+/**
+ * @private
+ *
+ * @returns {Event}
+ */
+function getNewGenericEvent(eventName, options){
+    var event;
 
-        try {
-            event = new Event(eventName);
+    try {
+        event = new Event(eventName);
 
-        } catch(e) {
-            event = document.createEvent('CustomEvent');
-            event.initCustomEvent(eventName, true, true, options || {});
-        }
-        return event;
+    } catch(e) {
+        event = document.createEvent('CustomEvent');
+        event.initCustomEvent(eventName, true, true, options || {});
+    }
+    return event;
+}
+
+/**
+ * @private
+ *
+ * @returns {Event}
+ *
+ * @see https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/KeyboardEvent
+ */
+function getNewKeyboardEvent(eventName, options){
+    var event;
+
+    try {
+        event = new KeyboardEvent(eventName, options);
+
+    } catch(e) {
+        event = getNewGenericEvent(eventName, options);
+    }
+    return event;
+}
+
+/**
+ * @private
+ *
+ * @returns {Event}
+ *
+ * @see https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/MouseEvent
+ */
+function getNewMouseEvent(eventName, options){
+    var event;
+
+    try {
+        event = new MouseEvent(eventName);
+
+    } catch(e) {
+        event = getNewGenericEvent(eventName, options);
+    }
+    return event;
+
+}
+
+/**
+ * Triggers an events on a given DOM Element.
+ *
+ * @fucntion domTriggerEvent
+ *
+ * @param {HTMLElement} ele
+ * @param {String} eventName
+ * @param {Object} [options]
+ *
+ */
+export default function domTriggerEvent(ele, eventName, options){
+    if (!ele || !eventName) {
+        return;
     }
 
-    /**
-     * @private
-     *
-     * @returns {Event}
-     *
-     * @see https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/KeyboardEvent
-     */
-    function getNewKeyboardEvent(eventName, options){
-        var event;
-
-        try {
-            event = new KeyboardEvent(eventName, options);
-
-        } catch(e) {
-            event = getNewGenericEvent(eventName, options);
-        }
-        return event;
+    if (typeof ele[eventName] === "function") {
+        ele[eventName]();
+        return;
     }
 
-    /**
-     * @private
-     *
-     * @returns {Event}
-     *
-     * @see https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/MouseEvent
-     */
-    function getNewMouseEvent(eventName, options){
-        var event;
+    var evInstance;
 
-        try {
-            event = new MouseEvent(eventName);
+    if (keyboardEvents.indexOf(eventName) !== -1) {
+        evInstance = getNewKeyboardEvent(eventName, options);
 
-        } catch(e) {
-            event = getNewGenericEvent(eventName, options);
-        }
-        return event;
-
+    } else if (mouseEvents.indexOf(eventName) !== -1) {
+        evInstance = getNewMouseEvent(eventName, options);
     }
 
-    /**
-     * Triggers an events on a given DOM Element.
-     *
-     * @param {HTMLElement} ele
-     * @param {String} eventName
-     * @param {Object} [options]
-     *
-     */
-    return function(ele, eventName, options){
-        if (!ele || !eventName) {
-            return;
-        }
-
-        if (typeof ele[eventName] === "function") {
-            ele[eventName]();
-            return;
-        }
-
-        var evInstance;
-
-        if (keyboardEvents.indexOf(eventName) !== -1) {
-            evInstance = getNewKeyboardEvent(eventName, options);
-
-        } else if (mouseEvents.indexOf(eventName) !== -1) {
-            evInstance = getNewMouseEvent(eventName, options);
-        }
-
-        ele.dispatchEvent(evInstance);
-    };
-});
+    ele.dispatchEvent(evInstance);
+}

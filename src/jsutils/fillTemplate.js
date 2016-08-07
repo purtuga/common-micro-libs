@@ -1,82 +1,82 @@
-define(["./getObjectPropValue"], function(getObjectPropValue){
+import getObjectPropValue from "./getObjectPropValue";
 
-    /**
-     * An extremely lightweight template engine for replacing
-     * tokens in the form of {{name}} with values from an object
-     * or a list (array) of objects
-     *
-     * @function fillTemplate
-     *
-     * @param {String|HTMLElement} template
-     *  Template should use double curly braces for data attributes.
-     *  These can be defined in dot notation for deep values in the data.
-     *
-     * @param {Object|Array<Object>} data
-     *  The Object containing the data that will be applied to the
-     *  template. An array of objects can also be defined
-     *
-     * @return {String}
-     */
-    return function fillTemplate(template, data) {
+/**
+ * An extremely lightweight template engine for replacing
+ * tokens in the form of {{name}} with values from an object
+ * or a list (array) of objects
+ *
+ * @function fillTemplate
+ *
+ * @param {String|HTMLElement} template
+ *  Template should use double curly braces for data attributes.
+ *  These can be defined in dot notation for deep values in the data.
+ *
+ * @param {Object|Array<Object>} data
+ *  The Object containing the data that will be applied to the
+ *  template. An array of objects can also be defined
+ *
+ * @return {String}
+ */
+export default function fillTemplate(template, data) {
 
-        var opt = {},
-            i,j,x,y,item, tokenVal, tmp;
+    var opt = {},
+        i,j,x,y,item, tokenVal, tmp;
 
-        // If user used an object to define input param, then parse that now
-        if (typeof template === "object" && arguments.length === 1) {
-            data        = template.data;
-            template    = template.template;
-        }
+    // If user used an object to define input param, then parse that now
+    if (typeof template === "object" && arguments.length === 1) {
+        data        = template.data;
+        template    = template.template;
+    }
 
-        opt.response = "";
+    opt.response = "";
 
-        if (typeof template !== "string") {
-            tmp = document.createElement("div");
-            tmp.appendChild(template);
-            template = tmp.innerHTML;
+    if (typeof template !== "string") {
+        tmp = document.createElement("div");
+        tmp.appendChild(template);
+        template = tmp.innerHTML;
+
+    } else {
+        opt.template = template;
+    }
+
+    opt.tokens = opt.template.match(/(\{\{.*?\}\})/g);
+
+    if (!Array.isArray(data)) {
+        if (!data) {
+            data = [{}];
 
         } else {
-            opt.template = template;
+            data = [ data ];
         }
+    }
 
-        opt.tokens = opt.template.match(/(\{\{.*?\}\})/g);
+    // If we have tokens in the template, then replace them
+    if (opt.tokens !== null) {
+        // If data tokens were passed in on input, then use them
+        // in looking for that token in the template and replacing
+        // it with the value defined.
+        for(x=0,y=data.length; x<y; x++){
+            item = opt.template;
 
-        if (!Array.isArray(data)) {
-            if (!data) {
-                data = [{}];
+            for(i=0,j=opt.tokens.length; i<j; i++){
+                opt.tokens[i]   = opt.tokens[i].replace(/[\{\}]/g, "");
+                tokenVal        = getObjectPropValue(data[x], opt.tokens[i]) || '';
+                //tokenVal        = data[x][ opt.tokens[i] ] || '';
 
-            } else {
-                data = [ data ];
-            }
-        }
-
-        // If we have tokens in the template, then replace them
-        if (opt.tokens !== null) {
-            // If data tokens were passed in on input, then use them
-            // in looking for that token in the template and replacing
-            // it with the value defined.
-            for(x=0,y=data.length; x<y; x++){
-                item = opt.template;
-
-                for(i=0,j=opt.tokens.length; i<j; i++){
-                    opt.tokens[i]   = opt.tokens[i].replace(/[\{\}]/g, "");
-                    tokenVal        = getObjectPropValue(data[x], opt.tokens[i]) || '';
-                    //tokenVal        = data[x][ opt.tokens[i] ] || '';
-
-                    if (typeof tokenVal === "function") {
-                        tokenVal = tokenVal.call(data[x]);
-                    }
-
-                    item = item.replace("{{" + opt.tokens[i] + "}}", tokenVal);
+                if (typeof tokenVal === "function") {
+                    tokenVal = tokenVal.call(data[x]);
                 }
 
-                opt.response += item;
+                item = item.replace("{{" + opt.tokens[i] + "}}", tokenVal);
             }
 
-        } else {
-            opt.response = opt.template;
+            opt.response += item;
         }
 
-        return opt.response;
-    };
-});
+    } else {
+        opt.response = opt.template;
+    }
+
+    return opt.response;
+}
+
