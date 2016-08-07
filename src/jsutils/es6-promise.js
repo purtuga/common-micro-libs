@@ -3,7 +3,9 @@
  *
  * -    Changed to ensure that auto-polyfill does not override the native implementation.
  *      Changes done to .default() method.
- * -    Changed AMD so that it returns the .promise (and not the namespace with promise and polyfill)
+ * -    Changed AMD so that it returns the .promise (and not the namespace with promise and polyfill),
+ * -    Comment out code in lib$es6$promise$asap$$attemptVertx() which was causing
+ *      webpack to try to load a module called Vertx (what?)
  *
  * See: https://github.com/stefanpenner/es6-promise/issues/140#issuecomment-192913875
  *
@@ -141,14 +143,14 @@ var polyfill;
     }
 
     function lib$es6$promise$asap$$attemptVertx() {
-      try {
-        var r = require;
-        var vertx = r('vertx');
-        lib$es6$promise$asap$$vertxNext = vertx.runOnLoop || vertx.runOnContext;
-        return lib$es6$promise$asap$$useVertxTimer();
-      } catch(e) {
+      //try {
+      //  var r = require;
+      //  var vertx = r('vertx');
+      //  lib$es6$promise$asap$$vertxNext = vertx.runOnLoop || vertx.runOnContext;
+      //  return lib$es6$promise$asap$$useVertxTimer();
+      //} catch(e) {
+      //}
         return lib$es6$promise$asap$$useSetTimeout();
-      }
     }
 
     var lib$es6$promise$asap$$scheduleFlush;
