@@ -446,7 +446,7 @@ var fetchPolyfill = function(self){
 
         return reqPromise;
     }
-    self.fetch.polyfill = true
+    self.fetch.polyfill = true;
 
     // Paul Tavares: Commented out default input and added custom object
     // })(typeof self !== 'undefined' ? self : this);
@@ -456,6 +456,6 @@ var fetchPolyfill = function(self){
 // Attempt to polyfill the namespace given on input or the global namespace
 fetchPolyfill();
 
-return fetchPolyfill;
+export default fetchPolyfill;
 
 /* jshint ignore:end */

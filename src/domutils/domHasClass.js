@@ -8,7 +8,7 @@
  *
  * @return {Boolean}
  */
-export default  function(el, cssClass){
+export default function(el, cssClass){
     if (el && cssClass) {
         return el.classList.contains(cssClass);
     }

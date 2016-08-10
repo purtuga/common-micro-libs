@@ -10,6 +10,9 @@
  */
 export default function objectExtend(mergeIntoObj) {
 
+
+    // For when we support deep merge: check if tru object Object.prototype.toString.call(n) === "[object Object]"
+
     var
     response    = mergeIntoObj || {},
     copyObjs    = Array.prototype.slice.call(arguments, 1),

@@ -14,5 +14,5 @@ export default function domPosition(positionEle, anchorEle/*, options*/){
         anchorElePosition   = anchorEle.getBoundingClientRect();
 
     positionEleStyles.left = anchorElePosition.left + PX;
-    positionEleStyles.top  = anchorElePosition.bottom + PX;
+    positionEleStyles.top  = (anchorElePosition.bottom + document.body.scrollTop) + PX;
 }
