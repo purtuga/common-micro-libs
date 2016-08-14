@@ -1,0 +1,87 @@
+.my-uiblock {
+    position:   absolute;
+    top:        0;
+    left:       0;
+    box-sizing: border-box;
+
+    &, &-overlay {
+        height:     100%;
+        width:      100%;
+    }
+
+    &-overlay {
+        background-color:   lightgrey;
+        opacity:            0.3;
+    }
+
+    &-content {
+        background-color:           white;
+        color:                      grey;
+        position:                   absolute;
+        top:                        1em;
+        padding:                    0.5em;
+        border-top-right-radius:    3px;
+        border-bottom-right-radius: 3px;
+        max-width:                  90%;
+    }
+
+    &-msg {
+        display: inline-block;
+        box-sizing: border-box;
+    }
+
+    &-img {
+        display:            inline-block;
+        width:              16px;
+        height:             16px;
+        background-image:   url(data:image/svg+xml;utf8;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iaXNvLTg4NTktMSI/Pgo8IS0tIEdlbmVyYXRvcjogQWRvYmUgSWxsdXN0cmF0b3IgMTkuMS4wLCBTVkcgRXhwb3J0IFBsdWctSW4gLiBTVkcgVmVyc2lvbjogNi4wMCBCdWlsZCAwKSAgLS0+CjxzdmcgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB4bWxuczp4bGluaz0iaHR0cDovL3d3dy53My5vcmcvMTk5OS94bGluayIgdmVyc2lvbj0iMS4xIiBpZD0iQ2FwYV8xIiB4PSIwcHgiIHk9IjBweCIgdmlld0JveD0iMCAwIDM0LjY1MiAzNC42NTIiIHN0eWxlPSJlbmFibGUtYmFja2dyb3VuZDpuZXcgMCAwIDM0LjY1MiAzNC42NTI7IiB4bWw6c3BhY2U9InByZXNlcnZlIiB3aWR0aD0iMjRweCIgaGVpZ2h0PSIyNHB4Ij4KPGc+Cgk8Zz4KCQk8cGF0aCBkPSJNMTUuNTI5LDMyLjg1NUM2Ljk2NiwzMi44NTUsMCwyNS44ODksMCwxNy4zMjZDMCw4Ljc2Myw2Ljk2NiwxLjc5NywxNS41MjksMS43OTcgICAgYzguNTYzLDAsMTUuNTI5LDYuOTY3LDE1LjUyOSwxNS41MjljMCwwLjQ5LTAuMzk3LDAuODg4LTAuODg4LDAuODg4Yy0wLjQ5LDAtMC44ODgtMC4zOTctMC44ODgtMC44ODggICAgYzAtNy41ODQtNi4xNy0xMy43NTUtMTMuNzU0LTEzLjc1NWMtNy41ODUsMC0xMy43NTUsNi4xNzEtMTMuNzU1LDEzLjc1NWMwLDcuNTg0LDYuMTcsMTMuNzU0LDEzLjc1NSwxMy43NTQgICAgYzQuODUyLDAsOS4zOTctMi42MDEsMTEuODYyLTYuNzg3YzAuMjQ5LTAuNDIzLDAuNzkzLTAuNTYyLDEuMjE1LTAuMzE0YzAuNDIyLDAuMjQ4LDAuNTYyLDAuNzkyLDAuMzE1LDEuMjE1ICAgIEMyNi4xMzksMjkuOTE5LDIxLjAwNywzMi44NTUsMTUuNTI5LDMyLjg1NXoiIGZpbGw9IiM4Yzg1OGMiLz4KCTwvZz4KCTxnPgoJCTxwYXRoIGQ9Ik0zMC4xNywxOC4yMTRjLTAuMTUzLDAtMC4zMDktMC4wNC0wLjQ1LTAuMTIzbC01LjU2MS0zLjI4NGMtMC40MjItMC4yNDktMC41NjItMC43OTMtMC4zMTMtMS4yMTUgICAgYzAuMjUtMC40MjIsMC43OTQtMC41NjIsMS4yMTYtMC4zMTJsNC44NTIsMi44NjVsMy4xMjMtNC40NzNjMC4yODEtMC40MDIsMC44MzQtMC41LDEuMjM1LTAuMjJjMC40MDIsMC4yOCwwLjUsMC44MzMsMC4yMiwxLjIzNSAgICBsLTMuNTk0LDUuMTQ2QzMwLjcyNiwxOC4wOCwzMC40NTEsMTguMjE0LDMwLjE3LDE4LjIxNHoiIGZpbGw9IiM4Yzg1OGMiLz4KCTwvZz4KPC9nPgo8Zz4KPC9nPgo8Zz4KPC9nPgo8Zz4KPC9nPgo8Zz4KPC9nPgo8Zz4KPC9nPgo8Zz4KPC9nPgo8Zz4KPC9nPgo8Zz4KPC9nPgo8Zz4KPC9nPgo8Zz4KPC9nPgo8Zz4KPC9nPgo8Zz4KPC9nPgo8Zz4KPC9nPgo8Zz4KPC9nPgo8Zz4KPC9nPgo8L3N2Zz4K);
+        background-size:    contain;
+        vertical-align:     baseline;
+
+        -webkit-animation:  my-uiblock-rotating 2s linear infinite;
+        -moz-animation:     my-uiblock-rotating 2s linear infinite;
+        -ms-animation:      my-uiblock-rotating 2s linear infinite;
+        -o-animation:       my-uiblock-rotating 2s linear infinite;
+        animation:          my-uiblock-rotating 2s linear infinite;
+    }
+
+    // to be used on the parent element of this widget
+    &-cntr {
+        position: relative;
+    }
+
+
+    // ANIMATION for image
+    @-webkit-keyframes my-uiblock-rotating {
+        from {
+            -ms-transform: rotate(0deg);
+            -moz-transform: rotate(0deg);
+            -webkit-transform: rotate(0deg);
+            -o-transform: rotate(0deg);
+            transform: rotate(0deg);
+        }
+        to {
+            -ms-transform: rotate(360deg);
+            -moz-transform: rotate(360deg);
+            -webkit-transform: rotate(360deg);
+            -o-transform: rotate(360deg);
+            transform: rotate(360deg);
+        }
+    }
+    @keyframes my-uiblock-rotating {
+        from {
+            -ms-transform: rotate(0deg);
+            -moz-transform: rotate(0deg);
+            -webkit-transform: rotate(0deg);
+            -o-transform: rotate(0deg);
+            transform: rotate(0deg);
+        }
+        to {
+            -ms-transform: rotate(360deg);
+            -moz-transform: rotate(360deg);
+            -webkit-transform: rotate(360deg);
+            -o-transform: rotate(360deg);
+            transform: rotate(360deg);
+        }
+    }
+}
