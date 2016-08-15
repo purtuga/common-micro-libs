@@ -33,7 +33,12 @@ var MapPolyfill = (function(){
     var globals = getGlobal();
 
 //[PT] use global if one exists
-    if (typeof globals.Map !== "undefined") {
+    if (
+        typeof globals.Map !== "undefined"                  &&
+        typeof globals.Map.prototype.keys !== "undefined"   &&
+        typeof globals.Map.prototype.values !== "undefined" &&
+        typeof globals.Map.prototype.entries !== "undefined"
+    ) {
         return globals.Map;
     }
 
@@ -667,6 +672,7 @@ var MapPolyfill = (function(){
         return MapShim;
     }());
 
+    return Map;
 })();
 
 export default MapPolyfill;

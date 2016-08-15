@@ -6,6 +6,7 @@ import parseHTML        from "../../jsutils/parseHTML"
 import domAddClass      from "../../domutils/domAddClass"
 import domRemoveClass   from "../../domutils/domRemoveClass"
 import UIBlockTemplate  from "text!./UIBlock.html"
+import "./UIBlock.less"
 
 const PRIVATE                 = dataStore.create();
 const CSS_BASE_CLASS          = "my-uiblock";
