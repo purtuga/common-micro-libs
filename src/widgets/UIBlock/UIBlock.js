@@ -5,7 +5,7 @@ import fillTemplate     from "../../jsutils/fillTemplate"
 import parseHTML        from "../../jsutils/parseHTML"
 import domAddClass      from "../../domutils/domAddClass"
 import domRemoveClass   from "../../domutils/domRemoveClass"
-import UIBlockTemplate  from "text!./UIBlock.html"
+import UIBlockTemplate  from "./UIBlock.html"
 import "./UIBlock.less"
 
 const PRIVATE                 = dataStore.create();
