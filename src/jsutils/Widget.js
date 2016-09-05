@@ -124,10 +124,7 @@ Widget = /** @lends Widget.prototype */{
  * @private
  */
 function destroy() {
-    var $ui = this.getEle();
-    if ($ui && $ui.parentNode) {
-        $ui.parentNode.removeChild($ui);
-    }
+    this.detach();
     this.$ui = null;
 }
 
