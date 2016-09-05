@@ -32,8 +32,8 @@ _$*
 node_modules
 vendor
 .project
-me*
-my*
+me.*
+my.*
 .grunt
 _SpecRunner.html
 .grunt*
