@@ -1,0 +1,27 @@
+.my-menu {
+    position:   relative;
+    display:    block;
+    box-sizing: border-box;
+    margin:     0;
+    padding:    0;
+    list-style: none;
+
+    > * {
+        display:        block;
+        width:          100%;
+        overflow:       hidden;
+        margin-bottom:  0.5em;
+        padding:        0.5em;
+        border-left:    3px solid transparent;
+        cursor:         pointer;
+
+        &:last-child {
+            margin-bottom: 0px;
+        }
+
+        &:hover {
+            border-left-color:  darkgrey;
+            color:              black;
+        }
+    }
+}
