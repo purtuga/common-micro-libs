@@ -1,4 +1,5 @@
 import Widget               from "../../jsutils/Widget";
+import EventEmitter         from "../../jsutils/EventEmitter";
 import dataStore            from "../../jsutils/dataStore";
 import objectExtend         from "../../jsutils/objectExtend";
 import parseHTML            from "../../jsutils/parseHTML";
@@ -16,10 +17,12 @@ PRIVATE = dataStore.create(),
  *
  * @class Menu
  * @extends {Widget}
+ * @extends {EventEmitter}
  *
  * @param {Object} [options]
  * @param {Array<Object>} [options.items]
  *
+ * @fires Menu#item-click
  */
 Menu = {
     init: function(options){
@@ -63,16 +66,26 @@ Menu = {
             return;
         }
 
-        $ui.appendChild(items.reduce(function(content, item){
+        $ui.appendChild(items.reduce((content, item) => {
             var itemSetup = objectExtend({
                     title:      'na',
                     onClick:    null
                 }, item),
                 menuItem = parseHTML(fillTemplate(menuItemTemplate, itemSetup)).firstChild;
 
-            if (itemSetup.onClick) {
-                domAddEventListener(menuItem, "click", itemSetup.onClick, false);
-            }
+            domAddEventListener(menuItem, "click", () => {
+                /**
+                 * User clicked on an item
+                 *
+                 * @event Menu#item-click
+                 * @type {Object}
+                 */
+                this.emit("item-click", item);
+
+                if (itemSetup.onClick) {
+                    itemSetup.onClick();
+                }
+            }, false);
 
             content.appendChild(menuItem);
 
@@ -81,7 +94,7 @@ Menu = {
     }
 };
 
-Menu = Widget.extend(Menu);
+Menu = EventEmitter.extend(Widget, Menu);
 
 Menu.defaults = {
     items: null
