@@ -95,7 +95,7 @@ var parseParams = function parseParamsFn(str) {
         pair = pairs[ arg ].split( "=" );
         injectParam(
             decodeURIComponent(String(pair[0]).replace(/\+/g, " ")),
-            decodeURIComponent(String(pair[1]).replace(/\+/g, " "))
+            decodeURIComponent(String(pair[1] || "").replace(/\+/g, " "))
         );
     }
 
