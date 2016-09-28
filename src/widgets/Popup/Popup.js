@@ -17,6 +17,18 @@ BODY = document.body,
  * @class Popup
  * @extends Widget
  *
+ * @param {Object} [options]
+ * @param {Widget|HTMLElement} [options.content]
+ * @param {HTMLElement} [options.attachTo]
+ * @param {Object} [options.position]
+ *  Object with any param accepted by `domPosition` utility.
+ *  Example:
+ *
+ *      {
+ *          my: "top right",
+ *          at: "bottom right"
+ *      }
+ *
  */
 Popup = {
     init: function(options){
@@ -86,7 +98,7 @@ Popup = {
         }
 
         this.appendTo(BODY);
-        domPosition($ui, inst.$ele);
+        domPosition($ui, inst.$ele, inst.opt.position);
 
         setTimeout(function(){
             inst.domListeners.push(
@@ -122,7 +134,8 @@ Popup = Widget.extend(Popup);
 
 Popup.defaults = {
     content:    null,
-    attachTo:   null
+    attachTo:   null,
+    position:   null
 };
 
 export default Popup;

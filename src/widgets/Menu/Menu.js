@@ -21,6 +21,7 @@ PRIVATE = dataStore.create(),
  *
  * @param {Object} [options]
  * @param {Array<Object>} [options.items]
+ *  Each menu item can have `title` (String) and `onClick` (Function)
  *
  * @fires Menu#item-click
  */
