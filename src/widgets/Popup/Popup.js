@@ -71,7 +71,7 @@ Popup = {
             content.appendTo($ui);
 
         } else if ("childNodes" in content) {
-            $ui.addChild(content);
+            $ui.appendChild(content);
         }
     },
 
