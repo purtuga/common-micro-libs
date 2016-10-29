@@ -25,10 +25,13 @@ import objectExtend from "./objectExtend"
  *  Number of miliseconds to wait before execution is started. Default is imediately.
  *
  * @return {Promise}
+ *  The returned promise will have one additional property - a method called `abort()`
+ *  which can be called to cancel the execution if not already completed. Calling
+ *  `abort` will cause the Promise to be `reject`ed if it has not yet been resolved
  *
  * @example
  *
- *      doWhen({
+ *      var future = doWhen({
  *          when: function(){
  *              return false;
  *          },
@@ -43,11 +46,14 @@ import objectExtend from "./objectExtend"
  *          alert("resolved.");
  *      });
  *
+ *      // later...
+ *      future.abort();
+ *
  */
 export default function doWhen(options) {
-    var promise = new Promise(function(resolve, reject){
-        var
-        opt = objectExtend({},
+    let abort;
+    let promise = new Promise(function(resolve, reject){
+        let opt = objectExtend({},
             {
                 when:       function(){},
                 exec:       function(){},
@@ -56,10 +62,16 @@ export default function doWhen(options) {
                 delayed:    0
             },
             options
-        ),
-        checkId         = null,
-        startChecking   = function(){
-
+        );
+        let checkId         = null;
+        let stopChecking    = function(){
+            if (checkId) {
+                clearInterval(checkId);
+                checkId = null;
+            }
+            opt.attempts = 0;
+        };
+        let startChecking   = function(){
             // Check condition now and if true, then resolve object
             if (opt.when() === true) {
                 opt.exec();
@@ -70,15 +82,14 @@ export default function doWhen(options) {
             // Start checking
             checkId = setInterval(function(){
                 if (opt.attempts === 0) {
-                    clearInterval(checkId);
-                    reject();
+                    stopChecking();
+                    reject(new Error("Timeout"));
 
                 } else {
                     --opt.attempts;
 
                     if (opt.when() === true) {
-                        opt.attempts = 0;
-                        clearInterval(checkId);
+                        stopChecking();
                         opt.exec();
                         resolve();
                     }
@@ -92,7 +103,16 @@ export default function doWhen(options) {
         } else {
             startChecking();
         }
+
+        abort = function(){
+            if (checkId) {
+                stopChecking();
+                reject(new Error("Aborted"));
+            }
+        };
     });
+
+    promise.abort = abort;
 
     return promise;
 }

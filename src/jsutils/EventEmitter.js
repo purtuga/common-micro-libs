@@ -1,10 +1,11 @@
 import Compose   from "./Compose"
 import dataStore from "./dataStore"
 
-
-var PRIVATE     = dataStore.create()
-var arraySlice  = Array.prototype.slice;
-var isFunction  = function(fn){return typeof fn === "function";};
+//----------------------------------------------------------------
+var PRIVATE         = dataStore.create();
+var arraySlice      = Array.prototype.slice;
+var isFunction      = function(fn){return typeof fn === "function";};
+var objectCreate    = Object.create;
 
 /**
  * Emits events. Use it to extend other modules and thus add events to them.
@@ -49,7 +50,7 @@ var EventEmitter = /** @lends EventEmitter.prototype */{
          * @property {Function} off
          *  Remove callback from event.
          */
-        return Object.create({
+        return objectCreate({
             off: function(){
                 listeners[evName][callbackIndex] = null;
             }
@@ -173,7 +174,7 @@ var EventEmitter = /** @lends EventEmitter.prototype */{
      */
     pipe: function(pipeTo, prefix, includeInstance){
         if (!pipeTo || !pipeTo.on) {
-            return null;
+            return objectCreate({ off: function(){} });
         }
         var pipes = getSetup.call(this).pipes,
             callbackIndex;
@@ -195,7 +196,7 @@ var EventEmitter = /** @lends EventEmitter.prototype */{
 
         callbackIndex = pipes.length - 1;
 
-        return Object.create({
+        return objectCreate({
             off: function(){
                 pipes[callbackIndex] = null;
             }
