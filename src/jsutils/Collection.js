@@ -2,9 +2,10 @@ import Compose      from "./Compose"
 import dataStore    from "./dataStore"
 import EventEmitter from "./EventEmitter"
 
-var PRIVATE         = dataStore.create();
-var ArrayPrototype  = Array.prototype;
-var changeMethods   = [
+
+const ArrayPrototype    = Array.prototype;
+const objectDefineProp  = Object.defineProperty;
+const changeMethods     = [
     'pop',
     'push',
     'shift',
@@ -27,26 +28,10 @@ var changeMethods   = [
  */
 var Collection = /** @lends Collection.prototype */{
     init: function(initialValues){
-        var inst = {
-            data: Array.isArray(initialValues) ? initialValues : []
-        };
-
-        PRIVATE.set(this, inst);
-        this.length = inst.data.length;
-
-        this.onDestroy(function(){
-            PRIVATE["delete"](this);
-        });
+        if (Array.isArray(initialValues)) {
+            this.push(...initialValues);
+        }
     },
-
-    /**
-     * The size of the collection.
-     *
-     * @protected
-     *
-     * @type {Number}
-     */
-    length: 0,
 
     /**
      * Returns the size of the collection
@@ -54,7 +39,7 @@ var Collection = /** @lends Collection.prototype */{
      * @returns {Number}
      */
     size: function(){
-        return PRIVATE.get(this).data.length;
+        return this.length;
     },
 
     /**
@@ -64,40 +49,43 @@ var Collection = /** @lends Collection.prototype */{
      * @param {Number} index
      * @param {*} [newValue]
      */
-    item: function(index){
-        var data = PRIVATE.get(this).data,
-            args = Array.prototype.slice.call(arguments, 0);
+    item: function (index){
+        let args    = ArrayPrototype.slice.call(arguments, 0);
+        let _array  = this;
 
-        if (typeof index !== "undefined") {
-            if (args.length === 1) {
-                return data[index];
-            }
-
-            data[index] = args[1];
+        // GET mode..
+        if (args.length === 1) {
+            return _array[index];
         }
+
+        // Update mode... Emits event
+        let updateResponse = _array[index] = args[1];
+        _array.emit("change", updateResponse);
+
+        return updateResponse;
     }
 };
 
 // Add all methods of Array.prototype to the collection
-Object.getOwnPropertyNames(Array.prototype).forEach(function(method){
+Object.getOwnPropertyNames(ArrayPrototype).forEach(function(method){
     if (method === "constructor" || typeof ArrayPrototype[method] !== "function") {
         return;
     }
 
-    var doEvents = changeMethods.indexOf(method) > -1;
+    var doEvents = changeMethods.indexOf(method) !== -1;
 
     Collection[method] = function(){
-        var inst     = PRIVATE.get(this),
-            response = ArrayPrototype[method].apply(inst.data, arguments);
+        var response = ArrayPrototype[method].apply(this, arguments);
 
         // If Array method can manipulate the array, then emit event
         if (doEvents) {
-            this.length = inst.data.length;
-
             /**
-             * Collection was changed.
+             * Collection was changed. Event will provide the value returned
+             * by the Array method that made the change.
              *
              * @event Collection#change
+             * @type {*}
+             *
              */
             this.emit("change", response);
         }
@@ -107,5 +95,28 @@ Object.getOwnPropertyNames(Array.prototype).forEach(function(method){
 });
 
 Collection = Compose.extend(EventEmitter, Collection);
+objectDefineProp(Collection, "create", {
+    value: function(){
+        let instance        = [];
+        let thisPrototype   = this.prototype;
+
+        // Copy all methods in this prototype to the Array instance
+        for (let prop in thisPrototype){
+            /* eslint-disable */
+            objectDefineProp(instance, prop, {
+                value:          thisPrototype[prop],
+                writable:       true,
+                configurable:   true
+            });
+            /* eslint-enable */
+        }
+
+        if (instance.init) {
+            instance.init.apply(instance, arguments);
+        }
+
+        return instance;
+    }
+});
 
 export default Collection;
