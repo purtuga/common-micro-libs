@@ -139,13 +139,23 @@ getInstance = function(){
  * @param {String} prop
  */
 watchProp = function(prop){
-    var
-    inst            = getInstance.call(this),
-    watched         = inst.watched,
-    eventRunning    = false,
-    currentValue;
+    let observable      = this;
+    let inst            = getInstance.call(observable);
+    let watched         = inst.watched;
+    let eventRunning    = false;
+    let currentValue, propDescriptor, priorGetter, priorSetter;
 
     if (!watched[prop]){
+        propDescriptor = Object.getOwnPropertyDescriptor(observable, prop);
+
+        if (propDescriptor) {
+            if (propDescriptor.configurable === false) {
+                return;
+            }
+            priorGetter = propDescriptor.get;
+            priorSetter = propDescriptor.set;
+        }
+
         currentValue = this[prop];
 
         // if we're able to remove the current property (ex. Constants would fail),
@@ -186,17 +196,24 @@ watchProp = function(prop){
                 configurable:   true,
 
                 get: function(){
-                    return watched[prop].newVal;
+                    return priorGetter ? priorGetter() : watched[prop].newVal;
                 },
 
                 set: function(newValue){
-                    watched[prop].oldVal = watched[prop].newVal;
-                    watched[prop].newVal = newValue;
+                    let oldValue = priorGetter ? priorGetter() : watched[prop].newVal;
+
+                    if (priorSetter) {
+                        priorSetter.call(observable, newValue);
+
+                    } else {
+                        watched[prop].oldVal = oldValue;
+                        watched[prop].newVal = newValue;
+                    }
 
                     // Dirty checking...
                     // Only trigger if values are different. Also, only add a trigger
                     // if one is not already queued.
-                    if (!watched[prop].queued && watched[prop].newVal !== watched[prop].oldVal) {
+                    if (!watched[prop].queued && newValue !== oldValue) {
                         watched[prop].notify(20);
                     }
                 }
