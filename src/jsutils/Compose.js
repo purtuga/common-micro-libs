@@ -89,7 +89,14 @@ var baseMethods = /** @lends Compose.prototype */{
             }
             onDestroyCallbacks.push(callback);
         }
-    }
+    },
+
+    /**
+     * Returns the factory for this instance.
+     *
+     * @return {Compose}
+     */
+    getFactory: function(){} // set by .extend()
 };
 
 var staticMethods = /** @lends Compose */{
@@ -101,9 +108,8 @@ var staticMethods = /** @lends Compose */{
      * @return {Compose}
      */
     extend: function(){
-        var
-            args    = Array.prototype.slice.call(arguments),
-            Factory = function(){};
+        var args    = Array.prototype.slice.call(arguments);
+        var Factory = function(){};
 
         Factory.prototype = args.reduce(function(newProto, obj){
             if (obj) {
@@ -115,7 +121,14 @@ var staticMethods = /** @lends Compose */{
             return newProto;
         }, objectCreate(this.prototype));
 
-        return objectExtend(Factory, this);
+        // Add a method to the Factory prototype that allows retrieval of
+        // factory static properties.
+        Factory.prototype.getFactory = function(){
+            return Factory;
+        };
+
+        // Extend new factory with statics from this factory
+        return objectExtend(true, Factory, this);
     },
 
     /**
