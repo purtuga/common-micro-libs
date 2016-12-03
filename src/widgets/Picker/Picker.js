@@ -4,6 +4,11 @@ import parseHTML                from "../../jsutils/parseHTML"
 import objectExtend             from "../../jsutils/objectExtend"
 import dataStore                from "../../jsutils/dataStore"
 import EventEmitter             from "../../jsutils/EventEmitter"
+
+import DomKeyboardInteraction   from "../../domutils/DomKeyboardInteraction"
+import domSetStyle              from "../../domutils/domSetStyle"
+import domTriggerEvent          from "../../domutils/domTriggerEvent"
+
 import Popup                    from "../Popup/Popup"
 import Menu                     from "../Menu/Menu"
 
@@ -27,7 +32,10 @@ const CSS_CLASS_TITLE   = `${CSS_CLASS_BASE}-title`;
  * @extends EventEmitter
  *
  * @param {Object} [options]
- * @param {Array<Object>} [options.choices]
+ * @param {String} [options.title="Select..."]
+ * @param {String} [options.popupWidth="full"]
+ *  A CSS value for the width of the popup, or the word `full` if wanting
+ *  the width of the popup to be as wide as the element to which it is attached
  *
  * @triggers Picker#item-selected
  * @triggers Picker#selection-cleared
@@ -40,20 +48,43 @@ var Picker = {
             choices:    null,
             selected:   null
         };
-        var popup   = inst.popup    = Popup.create();
-        var menu    = inst.menu     = Menu.create();
 
         PRIVATE.set(this, inst);
 
-        var $ui = this.$ui = parseHTML(
-            fillTemplate(this.getTemplate(), inst.opt)
+        var opt         = inst.opt;
+        var popup       = inst.popup    = Popup.create();
+        var menu        = inst.menu     = Menu.create();
+        var $popupUI    = popup.getEle();
+        var $ui         = this.$ui = parseHTML(
+            fillTemplate(this.getTemplate(), opt)
         ).firstChild;
-        var uiFind = $ui.querySelector.bind($ui);
+        var uiFind              = $ui.querySelector.bind($ui);
+        var setPopupWidthOnShow = opt.popupWidth === "full";
 
         inst.$title = uiFind(`.${CSS_CLASS_TITLE}`);
 
-        if (inst.opt.choices) {
-            this.setChoices(int.opt.choices);
+        if (opt.choices) {
+            this.setChoices(opt.choices);
+        }
+
+        // Setpu keyboard interaction
+        var keyboardInteraction = inst.keyboardInteraction = DomKeyboardInteraction.create({
+            input:         inst.$title,
+            eleGroup:      $popupUI,
+            eleSelector:   "li",
+            focusClass:     opt.focusClass
+        });
+
+        keyboardInteraction.on("keyEnter", (ev) => {
+            domTriggerEvent(ev.focusElement, "click");
+        });
+
+        keyboardInteraction.on("keyEsc", () => {
+            popup.hide();
+        });
+
+        if (!setPopupWidthOnShow) {
+            domSetStyle($popupUI, { width: opt.popupWidth });
         }
 
         menu.on("item-click", item => {
@@ -68,11 +99,16 @@ var Picker = {
             this.emit("item-selected",item);
         });
 
-        popup.getEle().style.maxHeight = '20em';
+
+        $popupUI.style.maxHeight = '20em';
         popup.setContent(menu);
         popup.attachTo($ui);
 
         $ui.addEventListener("click", function(){
+            if (setPopupWidthOnShow && !popup.isVisible()) {
+                domSetStyle($popupUI, { width: `${ $ui.clientWidth }px` });
+            }
+            keyboardInteraction.resetFocus();
             popup.toggle();
         });
 
@@ -182,8 +218,10 @@ var Picker = {
 Picker = EventEmitter.extend(Widget, Picker);
 
 Picker.defaults = {
-    choices: null,
-    title: "Select..."
+    choices:    null,
+    popupWidth: "full",
+    title:      "Select...",
+    focusClass: "my-menu-selected"
 };
 
 export default Picker;

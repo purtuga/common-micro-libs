@@ -16,12 +16,13 @@
         cursor:         pointer;
 
         &:last-child {
-            margin-bottom: 0px;
+            margin-bottom: 0;
         }
+    }
 
-        &:hover {
-            border-left-color:  darkgrey;
-            color:              black;
-        }
+    & > *:hover,
+    &-selected {
+        border-left-color:  darkgrey;
+        color:              black;
     }
 }

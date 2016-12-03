@@ -23,9 +23,10 @@ var KEY_ENTER   = 13;
  * Adds Keyboard navigation support (up, down, enter, esc) to the
  * children of a given element controlled from an input field.
  * For use in cases where the user's cursor may be focused on an
- * input field and wanting to control selection of HTML elements
- * in a group.  As focus moves from Element to Element, the `focusClass`
- * CSS class (see input params) will be applied to the element.
+ * input field (or an elemnet that can receive focus) and wanting to
+ * control selection of HTML elements in a group.  As focus moves
+ * from Element to Element, the `focusClass`  CSS class (see input
+ * params) will be applied to the element.
  *
  * The keyboard action that will be applies are:
  *
@@ -40,8 +41,12 @@ var KEY_ENTER   = 13;
  * @param {Object} options
  *
  * @param {HTMLElement} options.input
+ *  An input field or an element that can received focus (ex. `tabindex=0`).
+ *  Keyboard interaction will be driven from this input while it has focus.
  *
  * @param {HTMLElement} options.eleGroup
+ *  The Element containing the group of Element that will be cycled. This
+ *  would likely be an element with `max-height` set and `overflow:auto`.
  *
  * @param {String} [options.eleSelector=""]
  *  The selector to be used in retrieving the list of element that will
