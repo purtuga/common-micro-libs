@@ -1,7 +1,8 @@
-import Compose        from "./Compose"
-import dataStore      from "./dataStore"
-import domAddClass    from "../domutils/domAddClass"
-import domRemoveClass from "../domutils/domRemoveClass"
+import Compose          from "./Compose"
+import dataStore        from "./dataStore"
+import domAddClass      from "../domutils/domAddClass"
+import domRemoveClass   from "../domutils/domRemoveClass"
+import domChildren      from "../domutils/domChildren"
 
 import "./styles/widget"
 
@@ -99,13 +100,34 @@ Widget = /** @lends Widget.prototype */{
      * Appends the Widget to a given element.
      *
      * @param {HTMLElement|Widget} cntr
+     * @param {Number} [atPosition]
+     *  Position where element should be placed inside of the `cntr`.
+     *  Default is at the bottom (after last item). Zero based
      */
-    appendTo: function(cntr){
-        if (cntr && cntr.appendChild) {
-            cntr.appendChild(this.getEle());
+    appendTo: function(cntr, atPosition){
+        if (!cntr) {
+            return;
         }
-        if (cntr && cntr.getEle) {
-            cntr.getEle().appendChild(this.getEle());
+
+        let $ele        = this.getEle();
+        let $cntrEle    = cntr.appendChild ? cntr : cntr.getEle ? cntr.getEle() : null;
+
+        if (!$cntrEle) {
+            return;
+        }
+
+        if (typeof atPosition === "undefined") {
+            $cntrEle.appendChild($ele);
+            return;
+        }
+
+        let cntrChildren = domChildren($cntrEle);
+
+        if (cntrChildren[atPosition]) {
+            $cntrEle.insertBefore($ele, cntrChildren[atPosition]);
+
+        } else {
+            $cntrEle.appendChild($ele);
         }
     },
 

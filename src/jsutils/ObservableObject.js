@@ -5,7 +5,7 @@ import EventEmitter  from "./EventEmitter"
 
 var
 PRIVATE                 = dataStore.create(),
-GLOBAL_NOTIFY_DELEAY    = 10,
+GLOBAL_NOTIFY_DELAY     = 10,
 
 objectDefineProperty    = Object.defineProperty,
 objectHasOwnProperty    = Object.prototype.hasOwnProperty,
@@ -185,7 +185,7 @@ watchProp = function(prop){
                         return;
                     }
 
-                    watched[prop].queued = setTimeout(callListeners, GLOBAL_NOTIFY_DELEAY);
+                    watched[prop].queued = setTimeout(callListeners, GLOBAL_NOTIFY_DELAY);
                 }
             };
 
