@@ -7,6 +7,7 @@ import EventEmitter             from "../../jsutils/EventEmitter"
 
 import DomKeyboardInteraction   from "../../domutils/DomKeyboardInteraction"
 import domSetStyle              from "../../domutils/domSetStyle"
+import domAddClass              from "../../domutils/domAddClass"
 import domTriggerEvent          from "../../domutils/domTriggerEvent"
 
 import Popup                    from "../Popup/Popup"
@@ -61,13 +62,22 @@ var Picker = {
         var uiFind              = $ui.querySelector.bind($ui);
         var setPopupWidthOnShow = opt.popupWidth === "full";
 
+        opt.choices = opt.choices || [];
         inst.$title = uiFind(`.${CSS_CLASS_TITLE}`);
 
         if (opt.choices) {
             this.setChoices(opt.choices);
         }
 
-        // Setpu keyboard interaction
+        if (opt.selected){
+            this.setSelected(opt.selected);
+        }
+
+        if (!opt.showClear) {
+            domAddClass($ui, `${CSS_CLASS_BASE}--noClear`);
+        }
+
+        // setup keyboard interaction
         var keyboardInteraction = inst.keyboardInteraction = DomKeyboardInteraction.create({
             input:         inst.$title,
             eleGroup:      $popupUI,
@@ -219,7 +229,9 @@ Picker = EventEmitter.extend(Widget, Picker);
 
 Picker.defaults = {
     choices:    null,
+    selected:   "",
     popupWidth: "full",
+    showClear:  true,
     title:      "Select...",
     focusClass: "my-menu-selected"
 };
