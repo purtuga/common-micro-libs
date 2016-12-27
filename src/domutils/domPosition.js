@@ -1,6 +1,14 @@
 import objectExtend from "../jsutils/objectExtend"
 
-const PX        = "px";
+const WINDOW        = window;
+const DOCUMENT      = WINDOW.document;
+const SCROLL_TOP    = "scrollTop";
+const SCROLL_LEFT   = "scrollLeft";
+const PAGE_Y_OFFSET = "pageYOffset";
+const PAGE_X_OFFSET = "pageXOffset";
+const UNDEFINED     = "undefined";
+const PX            = "px";
+
 //const isTop     = /top/i;
 //const isBottom  = /bottom/i;
 const isLeft    = /left/i;
@@ -34,14 +42,12 @@ export default function domPosition(positionEle, anchorEle, options){
     var positionEleStyles   = positionEle.style;
     var anchorEleRect       = anchorEle.getBoundingClientRect();
     var positionEleRect     = positionEle.getBoundingClientRect();
-    var scrollTop           = document.body.scrollTop; // FIXME: support for non-window viewport
-    var scrollLeft          = document.body.scrollLeft; // FIXME: support for non-window viewport
-
-    var opt = objectExtend({
+    var opt                 = objectExtend({
         my:         "top left",
         at:         "bottom left",
-        viewport:   window
+        viewport:   WINDOW
     }, options);
+    var { scrollTop, scrollLeft } = getViewportScrollInfo(opt.viewport); // FIXME: support for non-window viewport
 
     // FIXME: support for non window viewport
     // var viewportTop     = 0;
@@ -102,4 +108,44 @@ export default function domPosition(positionEle, anchorEle, options){
 
     positionEleStyles.left = posLeft + PX;
     positionEleStyles.top  = posTop + PX;
+}
+
+/**
+ * returns the `scrollTop` and `scrollLeft` for a given element
+ *
+ * @param {HTMLElement|Window|Document} viewport
+ * @returns {Object}
+ *
+ * @example
+ *
+ * // return object:
+ *
+ * {
+ *      scrollTop:      222,
+ *      scrollLeft:     11
+ * }
+ *
+ */
+function getViewportScrollInfo(viewport) {
+    let response = {};
+
+    if (viewport === WINDOW || viewport === DOCUMENT){
+        if (typeof WINDOW[PAGE_Y_OFFSET] !== UNDEFINED){
+            response[SCROLL_TOP]    = WINDOW[PAGE_Y_OFFSET];
+            response[SCROLL_LEFT]   = WINDOW[PAGE_X_OFFSET];
+
+        } else if (DOCUMENT.documentElement) {
+            response[SCROLL_TOP]    = DOCUMENT.documentElement[SCROLL_TOP];
+            response[SCROLL_LEFT]   = DOCUMENT.documentElement[SCROLL_LEFT];
+
+        } else {
+            response[SCROLL_TOP]    = DOCUMENT.body[SCROLL_TOP];
+            response[SCROLL_LEFT]   = DOCUMENT.body[SCROLL_LEFT];
+        }
+    } else {
+        response[SCROLL_TOP]    = viewport[SCROLL_TOP];
+        response[SCROLL_LEFT]   = viewport[SCROLL_LEFT];
+    }
+
+    return response;
 }

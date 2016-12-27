@@ -160,6 +160,9 @@ var Picker = {
      * Selects a specific list
      *
      * @param {String|Object} item
+     *  The item will be compared against each of the choices until
+     *  a match is found. Match could by by entire value (if object),
+     *  or by looking at the choice `title` or `value` attributes.
      *
      */
     setSelected: function(item){
@@ -167,7 +170,7 @@ var Picker = {
 
         if (item) {
             inst.choices.some(choice => {
-                if (choice === item || choice.title === item) {
+                if (choice === item || choice.value === item || choice.title === item) {
                     inst.selected       = choice;
                     inst.$title.textContent  = choice.title;
                     return true;
@@ -199,7 +202,8 @@ var Picker = {
      *
      * @param {Array<Object>} [choices]
      *  If not defined, it will clear out the menu of choices.
-     *  Each choice (object) needs at least a `title` attribute. If
+     *  Each choice (object) needs at least a `title` attribute, but if a `value`
+     *  attribute is also defined, then that will be used as well by `setSelected`. If
      *  `onClick` attribute is defined, it will be called when user clicks on it.
      */
     setChoices: function(choices){

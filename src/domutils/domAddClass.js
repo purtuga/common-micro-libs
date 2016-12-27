@@ -10,6 +10,6 @@
 export default function domAddClass(el, cssClass){
     var classNameList = String(cssClass).split(/\s/).map(className => className.trim());
     if (el && cssClass) {
-        return el.classList.add(...classNameList);
+        classNameList.forEach((cssClass) => el.classList.add(cssClass));
     }
 }
