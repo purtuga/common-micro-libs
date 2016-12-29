@@ -99,6 +99,7 @@ Popup = {
 
         this.appendTo(BODY);
         domPosition($ui, inst.$ele, inst.opt.position);
+        removeAllDomListeners.call(this);
 
         setTimeout(function(){
             inst.domListeners.push(
