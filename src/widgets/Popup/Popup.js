@@ -28,6 +28,11 @@ BODY = document.body,
  *          my: "top right",
  *          at: "bottom right"
  *      }
+ * @param {Function} [options.onHide]
+ *  A function that is called when the dialog is hidden due
+ *  to the user clicking outiside of it. If this function
+ *  return `true`, then the dialog will not be hidden.
+ *  Function is given the DOM event object
  *
  */
 Popup = {
@@ -105,6 +110,10 @@ Popup = {
             inst.domListeners.push(
                 domAddEventListener(BODY, "click", function(ev){
                     if (!$ui.contains(ev.target)) {
+                        if (inst.opt.onHide && inst.opt.onHide(ev)) {
+                            return;
+                        }
+
                         this.hide();
                     }
                 }.bind(this))
@@ -136,7 +145,8 @@ Popup = Widget.extend(Popup);
 Popup.defaults = {
     content:    null,
     attachTo:   null,
-    position:   null
+    position:   null,
+    onHide:     null
 };
 
 export default Popup;
