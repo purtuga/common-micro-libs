@@ -78,6 +78,9 @@ Popup = {
         } else if ("childNodes" in content) {
             $ui.appendChild(content);
         }
+        if (this.isVisible()) {
+            this.show(); // To re-evaluate position
+        }
     },
 
     /**

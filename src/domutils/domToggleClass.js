@@ -7,5 +7,7 @@
  * @param {String} cssClass
  */
 export default function domToggleClass(el, cssClass){
-    return el.classList.toggle(cssClass);
+    if (el) {
+        return el.classList.toggle(cssClass);
+    }
 }
