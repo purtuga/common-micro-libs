@@ -95,6 +95,9 @@ Object.getOwnPropertyNames(ArrayPrototype).forEach(function(method){
 });
 
 Collection = Compose.extend(EventEmitter, Collection);
+
+// Define the "create" factory method that will then redefine each
+// our proxyied methods of Array prototype into the array instance
 objectDefineProp(Collection, "create", {
     value: function(){
         let instance        = [];
