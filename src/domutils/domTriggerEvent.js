@@ -62,7 +62,7 @@ function getNewMouseEvent(eventName, options){
 /**
  * Triggers an events on a given DOM Element.
  *
- * @fucntion domTriggerEvent
+ * @function domTriggerEvent
  *
  * @param {HTMLElement} ele
  * @param {String} eventName
@@ -74,6 +74,7 @@ export default function domTriggerEvent(ele, eventName, options){
         return;
     }
 
+    // FIXME: does not work for window.scroll()
     if (typeof ele[eventName] === "function") {
         ele[eventName]();
         return;
