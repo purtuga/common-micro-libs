@@ -2,7 +2,7 @@
  * Get an element's current position (`top`, `left`) relative to document that it
  * is displayed in.
  *
- * @param ele
+ * @param {HTMLElement} ele
  * @returns {{top: number, left: number}}
  */
 export default function domOffset(ele) {
@@ -12,11 +12,8 @@ export default function domOffset(ele) {
         return { top: 0, left: 0 };
     }
 
-    // Return zeros for disconnected and hidden (display: none) elements (gh-2310)
-    // Support: IE <=11 only
-    // Running getBoundingClientRect on a
-    // disconnected node in IE throws an error
-    if ( !ele.getClientRects().length ) {
+    // If element is not attached or is the window or document, then exit
+    if (!ele.getClientRects || !ele.getClientRects().length ) {
         return { top: 0, left: 0 };
     }
 
