@@ -86,10 +86,15 @@ Popup = {
     /**
      * Attaches the popup to a given element
      *
-     * @param {HTMLElement} ele
+     * @param {HTMLElement|Widget} ele
      */
     attachTo: function(ele){
         var inst = PRIVATE.get(this);
+
+        if (ele.getEle) {
+            ele = ele.getEle();
+        }
+
         inst.$ele = ele;
 
         if (this.isVisible()) {

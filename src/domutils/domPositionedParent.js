@@ -1,4 +1,4 @@
-let IS_POSITIONED   = /fixed|position|absolute/i;
+let IS_POSITIONED   = /fixed|relative|absolute/i;
 let ROOT            = document.documentElement;
 
 /**
