@@ -4,7 +4,7 @@ import domAddClass      from "../domutils/domAddClass"
 import domRemoveClass   from "../domutils/domRemoveClass"
 import domChildren      from "../domutils/domChildren"
 
-import "./styles/widget"
+import "./styles/widget.less"
 
 
 var
