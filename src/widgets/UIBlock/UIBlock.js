@@ -21,6 +21,7 @@ const CSS_CLASS_PARENT_CNTR   = CSS_BASE_CLASS + "-cntr";
  *
  * @param {Object} [options]
  * @param {String} [options.message="Please wait..."]
+ * @param {String} [options.setParentClass=true]
  */
 const UIBlock = Widget.extend(/** @lends UIBlock.prototype */{
     init: function(options){
@@ -39,7 +40,7 @@ const UIBlock = Widget.extend(/** @lends UIBlock.prototype */{
 
     show: function(){
         var $parentNode = this.getEle().parentNode;
-        if ($parentNode) {
+        if ($parentNode && PRIVATE.get(this).opt.setParentClass) {
             domAddClass($parentNode, CSS_CLASS_PARENT_CNTR);
         }
         return Widget.prototype.show.apply(this, arguments);
@@ -47,7 +48,7 @@ const UIBlock = Widget.extend(/** @lends UIBlock.prototype */{
 
     hide: function(){
         var $parentNode = this.getEle().parentNode;
-        if ($parentNode) {
+        if ($parentNode && PRIVATE.get(this).opt.setParentClass) {
             domRemoveClass($parentNode, CSS_CLASS_PARENT_CNTR);
         }
         return Widget.prototype.hide.apply(this, arguments);
@@ -65,7 +66,8 @@ const UIBlock = Widget.extend(/** @lends UIBlock.prototype */{
 });
 
 UIBlock.defaults = {
-    message: "Please wait..."
+    message: "Please wait...",
+    setParentClass: true
 };
 
 export default UIBlock;

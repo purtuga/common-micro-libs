@@ -4,7 +4,7 @@
  *
  * @param {Array} arr
  * @param {Function|Object} iterator
- * @param {Boolean} returnIndex
+ * @param {Boolean} [returnIndex]
  * @returns {*}
  */
 export default function arrayFindBy(arr, iterator, returnIndex) {
