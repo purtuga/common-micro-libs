@@ -1,6 +1,7 @@
+const OBJECT_TYPE   = "[object Object]";
+const _toString     = Function.call.bind(Object.prototype.toString);
 
-var _toString = Function.call.bind(Object.prototype.toString);
-
+//============================================================
 
 /**
  * Extends an object with the properties of another.
@@ -15,13 +16,11 @@ var _toString = Function.call.bind(Object.prototype.toString);
  * @return {Object}
  */
 export default function objectExtend(mergeIntoObj, ...mergeObjects) {
-
-    var
-    response    = mergeIntoObj || {},
-    // mergeObjects    = Array.prototype.slice.call(arguments, 1),
-    total       = mergeObjects.length,
-    deepMerge   = false,
-    i, key;
+    let response    = mergeIntoObj || {};
+    let total       = mergeObjects.length;
+    let deepMerge   = false;
+    let i;
+    let key;
 
     if (typeof mergeIntoObj === "boolean") {
         deepMerge   = mergeIntoObj;
@@ -30,25 +29,24 @@ export default function objectExtend(mergeIntoObj, ...mergeObjects) {
     }
 
     for (i = 0; i < total; i++) {
-
         if (!mergeObjects[i]) {
             continue;
         }
 
         for (key in mergeObjects[i]) {
             if (mergeObjects[i].hasOwnProperty(key)){
-
-                if (deepMerge &&  _toString(mergeObjects[i][key]) === "[object Object]") {
+                if (
+                    deepMerge &&
+                    _toString(response[key]) === OBJECT_TYPE &&
+                    _toString(mergeObjects[i][key]) === OBJECT_TYPE
+                ) {
                     response[key] = objectExtend( true, response[key], mergeObjects[i][key]);
                     
                 } else {
                     response[key] = mergeObjects[i][key];
                 }
-                
-                //response[key] = mergeObjects[i][key];
             }
         }
-
     }
     return response;
 }
