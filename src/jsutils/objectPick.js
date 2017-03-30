@@ -21,7 +21,7 @@ export default function objectPick(obj,...props) {
     }
 
     return props.reduce((result, prop) => {
-        if (obj.hasOwnProperty(prop)) {
+        if (prop in obj) {
             result[prop] = obj[prop];
         }
         return result;

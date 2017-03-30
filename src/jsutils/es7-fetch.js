@@ -1,5 +1,8 @@
 /* jshint ignore:start */
-import Promise from "./es6-promise";
+import Promise      from "./es6-promise";
+import EventEmitter from "./EventEmitter"
+
+const globalEvents = EventEmitter.create();
 
 /**
  * A polyfill for the proposed ECMAScript `fetch` API and associated classes.
@@ -11,11 +14,15 @@ import Promise from "./es6-promise";
  *  -   `fetchPolyfill.Request`
  *  -   `fetchPolyfill.Response`
  *  -   `fetchPolyfill.fetch`
+ *  -   `fetchPolyfill.on`: Event emitter to listen for events
  *
  * @namespace fetchPolyfill
  *
  * @see https://github.com/purtuga/fetch
  * @see https://github.com/github/fetch
+ *
+ * @fires fetchPolyfill#pre-fetch
+ * @fires fetchPolyfill#post-fetch
  *
  * @example
  *
@@ -44,6 +51,7 @@ import Promise from "./es6-promise";
  * });
  */
 
+// FIXME: PT: not good... overriding native implementation if it exists
 var fetchPolyfill = function(self){
     self = self || Function('return this')(); // jshint ignore:line
     ['Headers', 'Request', 'Response', 'fetch'].forEach(function(prop){
@@ -410,10 +418,22 @@ var fetchPolyfill = function(self){
                     url: responseURL()
                 }
                 var body = 'response' in xhr ? xhr.response : xhr.responseText;
+
+                /**
+                 * A fetch (http call) was completed.
+                 *
+                 * @event fetchPolyfill#post-fetch
+                 * @type {Object}
+                 * @property {String} url
+                 * @property {XMLHttpRequest} xhr
+                 */
+                globalEvents.emit("post-fetch", { url: input, xhr: xhr });
+
                 resolve(new Response(body, options))
             }
 
             xhr.onerror = function() {
+                globalEvents.emit("post-fetch", { url: input, xhr: xhr });
                 reject(new TypeError('Network request failed'))
             }
 
@@ -436,6 +456,16 @@ var fetchPolyfill = function(self){
                 xhr.setRequestHeader(name, value)
             })
 
+            /**
+             * fetch (http request) is about to be done
+             *
+             * @event fetchPolyfill#pre-fetch
+             * @type Object
+             * @property {String} url
+             * @property {Object} options
+             */
+            globalEvents.emit("pre-fetch", { url: input, xhr: xhr });
+
             xhr.send(typeof request._bodyInit === 'undefined' ? null : request._bodyInit)
         });
 
@@ -452,6 +482,8 @@ var fetchPolyfill = function(self){
     // })(typeof self !== 'undefined' ? self : this);
 
 })(fetchPolyfill);
+
+fetchPolyfill.on = globalEvents.on.bind(globalEvents);
 
 // Attempt to polyfill the namespace given on input or the global namespace
 fetchPolyfill();
