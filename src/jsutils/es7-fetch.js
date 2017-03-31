@@ -464,7 +464,7 @@ var fetchPolyfill = function(self){
              * @property {String} url
              * @property {Object} options
              */
-            globalEvents.emit("pre-fetch", { url: input, xhr: xhr });
+            globalEvents.emit("pre-fetch", { url: input, xhr: xhr, init: init });
 
             xhr.send(typeof request._bodyInit === 'undefined' ? null : request._bodyInit)
         });
