@@ -161,7 +161,7 @@ var Picker = {
      *
      * @param {String|Object} item
      *  The item will be compared against each of the choices until
-     *  a match is found. Match could by by entire value (if object),
+     *  a match is found. Match could by by entire Choice (if object),
      *  or by looking at the choice `title` or `value` attributes.
      *
      */

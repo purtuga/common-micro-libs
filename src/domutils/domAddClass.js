@@ -8,8 +8,8 @@
  *  Multiple classes can be set using spaces as a delimiter
  */
 export default function domAddClass(el, cssClass){
-    var classNameList = String(cssClass).split(/\s/).map(className => className.trim());
-    if (el && cssClass) {
+    let classNameList = String(cssClass).trim().split(/\s+/).map(className => className.trim());
+    if (el && classNameList.length) {
         classNameList.forEach((cssClass) => el.classList.add(cssClass));
     }
 }
