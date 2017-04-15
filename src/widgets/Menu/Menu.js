@@ -48,7 +48,7 @@ Menu = {
     setItems: function(items){
         var $ui = this.getEle();
 
-        $ui.innerHTML = "";
+        $ui.textContent = "";
 
         if (!items) {
             return;

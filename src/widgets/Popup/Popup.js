@@ -66,7 +66,7 @@ Popup = {
     setContent: function(content){
         var $ui = this.getEle();
 
-        $ui.innerHTML = "";
+        $ui.textContent = "";
 
         if (!content){
             return;
