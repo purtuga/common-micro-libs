@@ -26,7 +26,7 @@ const CSS_CLASS_PARENT_CNTR   = CSS_BASE_CLASS + "-cntr";
 const UIBlock = Widget.extend(/** @lends UIBlock.prototype */{
     init: function(options){
         var inst = {
-            opt: objectExtend({}, UIBlock.defaults, options)
+            opt: objectExtend({}, this.getFactory().defaults, options)
         };
 
         PRIVATE.set(this, inst);

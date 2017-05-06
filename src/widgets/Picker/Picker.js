@@ -44,7 +44,7 @@ const CSS_CLASS_TITLE   = `${CSS_CLASS_BASE}-title`;
 var Picker = {
     init: function (options){
         var inst = {
-            opt:        objectExtend({}, Picker.defaults, options),
+            opt:        objectExtend({}, this.getFactory().defaults, options),
             ready:      null,
             choices:    null,
             selected:   null
@@ -236,8 +236,10 @@ Picker.defaults = {
     selected:   "",
     popupWidth: "full",
     showClear:  true,
-    title:      "Select...",
-    focusClass: "my-menu-selected"
+    focusClass: "my-menu-selected",
+    labels:     {
+        title: "Select..."
+    }
 };
 
 export default Picker;

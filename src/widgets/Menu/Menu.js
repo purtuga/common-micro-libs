@@ -28,7 +28,7 @@ PRIVATE = dataStore.create(),
 Menu = {
     init: function(options){
         var inst = {
-            opt: objectExtend({}, Menu.defaults, options)
+            opt: objectExtend({}, this.getFactory().defaults, options)
         };
 
         PRIVATE.set(this, inst);

@@ -38,7 +38,7 @@ BODY = document.body,
 Popup = {
     init: function(options){
         var inst = {
-            opt:            objectExtend({}, Popup.defaults, options),
+            opt:            objectExtend({}, this.getFactory().defaults, options),
             $ele:           null,
             domListeners:   []
         };
