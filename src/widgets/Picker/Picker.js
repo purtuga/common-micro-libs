@@ -33,7 +33,8 @@ const CSS_CLASS_TITLE   = `${CSS_CLASS_BASE}-title`;
  * @extends EventEmitter
  *
  * @param {Object} [options]
- * @param {String} [options.title="Select..."]
+ * @param {Object} [options.labels]
+ * @param {String} [options.labels.title="Select..."]
  * @param {String} [options.popupWidth="full"]
  *  A CSS value for the width of the popup, or the word `full` if wanting
  *  the width of the popup to be as wide as the element to which it is attached
@@ -194,7 +195,7 @@ var Picker = {
     clearSelected: function(){
         var inst = PRIVATE.get(this);
         inst.selected           = null;
-        inst.$title.textContent = inst.opt.title;
+        inst.$title.textContent = inst.opt.labels.title;
     },
 
     /**
