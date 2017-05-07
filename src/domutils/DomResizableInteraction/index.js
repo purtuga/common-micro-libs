@@ -2,13 +2,20 @@ import EventEmitter         from "../../jsutils/EventEmitter"
 import objectExtend         from "../../jsutils/objectExtend"
 import dataStore            from "../../jsutils/dataStore"
 import domAddEventListener  from "../domAddEventListener"
+import domAddClass          from "../domAddClass"
+import domRemoveClass       from "../domRemoveClass"
+
+import "./DomResizableInteraction.less"
 
 //========================================================================
-const PRIVATE   = dataStore.create();
-const WINDOW    = window;
-const EV_RESIZE = "resize";
-const EV_START  = `${ EV_RESIZE }-start`;
-const EV_END    = `${ EV_RESIZE }-end`;
+const PRIVATE                   = dataStore.create();
+const WINDOW                    = window;
+const DOCUMENT                  = WINDOW.document;
+const DOCUMENT_ELEMENT          = DOCUMENT.documentElement || DOCUMENT.body;
+const EV_RESIZE                 = "resize";
+const EV_START                  = `${ EV_RESIZE }-start`;
+const EV_END                    = `${ EV_RESIZE }-end`;
+const CSS_CLASS_NO_USER_SELECT  = "dri--noUserSelect";
 
 /**
  * Utility to make a given DOM element resizable by dragging its
@@ -153,6 +160,8 @@ function addEventHandlingToHandle(options = {movement: "all"}) {
             fireEvent = true;
         }
 
+        domRemoveClass(DOCUMENT_ELEMENT, CSS_CLASS_NO_USER_SELECT);
+
         if (fireEvent) {
             /**
              * Resizing of element has ended (user released the mouse (mouseup).
@@ -169,6 +178,7 @@ function addEventHandlingToHandle(options = {movement: "all"}) {
         handleX     = handleEle.clientX;
         handleY     = handleEle.clientY;
 
+        domAddClass(DOCUMENT_ELEMENT, CSS_CLASS_NO_USER_SELECT);
         domEvents.mousemove = domAddEventListener(WINDOW, "mousemove touchmove", resizeWhenMouseMoves, false);
         domEvents.mouseup = domAddEventListener(WINDOW, "mouseup touchend", stopResizing, false);
 
