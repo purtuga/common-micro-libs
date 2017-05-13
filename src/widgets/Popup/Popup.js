@@ -37,10 +37,11 @@ BODY = document.body,
  */
 Popup = {
     init: function(options){
-        var inst = {
+        let inst = {
             opt:            objectExtend({}, this.getFactory().defaults, options),
             $ele:           null,
-            domListeners:   []
+            domListeners:   [],
+            scrollTop:      0
         };
 
         PRIVATE.set(this, inst);
@@ -103,7 +104,7 @@ Popup = {
     },
 
     show: function(){
-        var inst    = PRIVATE.get(this),
+        let inst    = PRIVATE.get(this),
             $ui     = this.getEle();
 
         if (!inst.$ele) {
@@ -113,6 +114,7 @@ Popup = {
         this.appendTo(BODY);
         domPosition($ui, inst.$ele, inst.opt.position);
         removeAllDomListeners.call(this);
+        $ui.scrollTop = inst.scrollTop;
 
         setTimeout(function(){
             inst.domListeners.push(
@@ -130,6 +132,7 @@ Popup = {
     },
 
     hide: function(){
+        PRIVATE.get(this).scrollTop = this.getEle().scrollTop;
         this.detach();
         removeAllDomListeners.call(this);
     }
