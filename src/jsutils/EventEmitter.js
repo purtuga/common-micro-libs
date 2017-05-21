@@ -2,59 +2,73 @@ import Compose   from "./Compose"
 import dataStore from "./dataStore"
 
 //----------------------------------------------------------------
-var PRIVATE         = dataStore.create();
-var arraySlice      = Array.prototype.slice;
-var isFunction      = function(fn){return typeof fn === "function";};
-var objectCreate    = Object.create;
+const PRIVATE         = dataStore.create();
+const arraySlice      = Array.prototype.slice;
+const isFunction      = function(fn){return typeof fn === "function";};
+const objectCreate    = Object.create;
 
 /**
  * Emits events. Use it to extend other modules and thus add events to them.
  *
  * @class EventEmitter
  * @extends Compose
- *
  */
-var EventEmitter = /** @lends EventEmitter.prototype */{
+const EventEmitter = Compose.extend(/** @lends EventEmitter.prototype */{
     /**
      * Add a callback to a given event name
      *
      * @param {String} evName
-     *  The event name to be listened to. A `"*"` can be defined  as well
-     *  which will essentially listen to all events. Note that this special
-     *  event however, will change the arguments passed to the callback by
-     *  pre-pending the Event Name (`String`) and appending the
-     *  Component instance.
+     *  The event name to be listened to or a list of event sperated by a space.
+     *  A `"*"` can be defined  as well which will essentially listen to all
+     *  events. Note that this special event however, will change the arguments
+     *  passed to the callback by pre-pending the Event Name (`String`) and
+     *  appending the Component instance.
      *
      * @param {Function} callback
      *  A callback function to listen to the event. The callback function
      *  can cancel any queued event callbacks by returning `true` (boolean).
      *
-     * @return {EventListener}
+     * @return {EventEmitter#EventListener}
      */
     on: function(evName, callback){
-        var listeners = getSetup.call(this).listeners,
-            callbackIndex;
+        let listeners   = getSetup.call(this).listeners;
+        let events      = evName.split(/\s+/).reduce((eventList, eventName) => {
+            if (!(eventName in listeners)) {
+                listeners[eventName] = [];
+            }
 
-        if (!(evName in listeners)) {
-            listeners[evName] = [];
-        }
+            listeners[eventName].push(callback);
+            let callbackIndex = listeners[eventName].length - 1;
 
-        listeners[evName].push(callback);
-        callbackIndex = listeners[evName].length - 1;
+            eventList[eventName] = objectCreate({
+                off: () => {
+                    listeners[eventName][callbackIndex] = null;
+                }
+            });
 
+            return eventList;
+        }, {});
         /**
-         * Event Listener
+         * EventEmitter Listener object, returned when one of the listener setter methods
+         * (ex. `on()`, `once()`, `pipe`) are used.
          *
-         * @typedef {Object} EventListener
+         * @typedef {Object} EventEmitter#EventListener
+         *
+         * @property {Object} listeners
+         *  An object with the individual listeners. Each respective event listener
+         *  has an `off()` method to turn that listener off.
          *
          * @property {Function} off
          *  Remove callback from event.
          */
-        return objectCreate({
+        let response = objectCreate({
             off: function(){
-                listeners[evName][callbackIndex] = null;
+                Object.keys(events).forEach(eventName => events[eventName].off());
             }
         });
+
+        response.listeners = events;
+        return response;
     },
 
     /**
@@ -81,16 +95,31 @@ var EventEmitter = /** @lends EventEmitter.prototype */{
      * Add a callback to a given event name that is executed only once.
      *
      * @param {String} evName
+     *  The event name. This can be a list of event delimited with a space. Each
+     *  event listeners will be triggered at most once.
      * @param {Function} callback
      *
-     * @return {EventListener}
+     * @return {EventEmitter#EventListener}
      */
     once: function(evName, callback){
-        var eventListener   = this.on(evName, function(){
-            eventListener.off();
-            callback.apply(callback, arguments);
+        let events = evName.split(/\s+/).reduce((eventListeners, eventName) => {
+            let eventNameListener = this.on(evName, function(...args){
+                eventNameListener.off();
+                callback(...args);
+            });
+
+            eventListeners[eventName] = eventNameListener;
+            return eventListeners;
+        }, {});
+
+        let response = objectCreate({
+            off: function(){
+                Object.keys(events).forEach(eventName => events[eventName].off());
+            }
         });
-        return eventListener;
+
+        response.listeners = events;
+        return response;
     },
 
     /**
@@ -202,14 +231,14 @@ var EventEmitter = /** @lends EventEmitter.prototype */{
             }
         });
     }
-},
+});
 
 /**
  * Returns the instance setup object. Creates it if it does not have one.
  * @private
  * @this EventEmitter
  */
-getSetup = function(){
+function getSetup(){
     if (!PRIVATE.has(this)) {
         /*
             listeners: {
@@ -234,9 +263,6 @@ getSetup = function(){
         }.bind(this));
     }
     return PRIVATE.get(this);
-};
-
-EventEmitter = Compose.extend(EventEmitter);
+}
 
 export default EventEmitter;
-

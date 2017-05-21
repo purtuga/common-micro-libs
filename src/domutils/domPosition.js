@@ -23,16 +23,21 @@ const isLeft    = /left/i;
  * @function domPosition
  *
  * @param {HTMLElement} positionEle
+ *
  * @param {HTMLElement} anchorEle
+ *
  * @param {Object} [options]
+ * 
  * @param {String} [options.my]
  *  Which area of the `positionEle` should be used to position it against the
  *  `anchorEle`. Default is `top left`. Possible values:
  *  -   `top left`
  *  -   `top right`
+ *
  * @param {String} [options.at]
  *  The `anchorEle` position where the `positionEle` should be displayed. Default
  *  is `bottom left` (so right below the `anchorEle`, left aligned).
+ *
  * @param {HTMLElement} [options.viewport=window]
  *  The viewport to be used in detecting collision. (NOTE: currently,
  *  only window is supported)
