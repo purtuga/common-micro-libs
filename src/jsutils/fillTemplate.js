@@ -64,7 +64,14 @@ export default function fillTemplate(template, data) {
                 //tokenVal        = data[x][ opt.tokens[i] ] || '';
 
                 if (typeof tokenVal === "function") {
-                    tokenVal = tokenVal.call(data[x]);
+                    let fnContext = data[x];
+
+                    // Function should be called with the same context as it was originally created.
+                    if (opt.tokens[i].indexOf(".") !== -1) {
+                        fnContext = getObjectPropValue(data[x], opt.tokens[i].substr(0, opt.tokens[i].lastIndexOf(".")));
+                    }
+
+                    tokenVal = tokenVal.call(fnContext);
                 }
 
                 item = item.replace("{{" + opt.tokens[i] + "}}", tokenVal);

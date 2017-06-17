@@ -10,15 +10,15 @@
  *  definition could be defined using dot notation is wanting to
  *  retrieve a property deep in the object. Example:
  *  `name`, or `i18n.en-us.name`
+ *
  */
 export default function getObjectPropValue(obj, prop){
     if (!obj || !prop) {
         return;
     }
 
-    var
-    keys = prop.split("."),
-    key;
+    let keys = prop.split(".");
+    let key;
 
     while ((key = keys.shift())) {
         if (!obj || !(obj instanceof Object) || !(key in obj)) {
