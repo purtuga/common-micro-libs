@@ -44,16 +44,17 @@ const CSS_CLASS_TITLE   = `${CSS_CLASS_BASE}-title`;
  */
 var Picker = {
     init: function (options){
-        var inst = {
-            opt:        objectExtend({}, this.getFactory().defaults, options),
+        var opt     = objectExtend({}, this.getFactory().defaults, options);
+        var inst    = {
+            opt:        opt,
             ready:      null,
             choices:    null,
-            selected:   null
+            selected:   null,
+            $noChoices: parseHTML(`<div class="Picker-noChoices">${ opt.labels.noChoices }</div>`).firstChild
         };
 
         PRIVATE.set(this, inst);
 
-        var opt         = inst.opt;
         var popup       = inst.popup    = Popup.create();
         var menu        = inst.menu     = Menu.create();
         var $popupUI    = popup.getEle();
@@ -65,10 +66,7 @@ var Picker = {
 
         opt.choices = opt.choices || [];
         inst.$title = uiFind(`.${CSS_CLASS_TITLE}`);
-
-        if (opt.choices) {
-            this.setChoices(opt.choices);
-        }
+        this.setChoices(opt.choices);
 
         if (opt.selected){
             this.setSelected(opt.selected);
@@ -112,7 +110,6 @@ var Picker = {
 
 
         $popupUI.style.maxHeight = '20em';
-        popup.setContent(menu);
         popup.attachTo($ui);
 
         $ui.addEventListener("click", function(){
@@ -211,6 +208,7 @@ var Picker = {
         var inst = PRIVATE.get(this);
         inst.menu.setItems(choices);
         inst.choices = choices || [];
+        inst.popup.setContent(inst.choices.length ? inst.menu : inst.$noChoices);
     },
 
     /**
@@ -239,7 +237,8 @@ Picker.defaults = {
     showClear:  true,
     focusClass: "my-menu-selected",
     labels:     {
-        title: "Select..."
+        title: "Select...",
+        noChoices: "No choices available"
     }
 };
 
