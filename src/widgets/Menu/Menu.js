@@ -9,8 +9,7 @@ import menuTemplate         from "./menu.html";
 import menuItemTemplate     from "./menuItem.html";
 import "./menu.less";
 
-var
-PRIVATE = dataStore.create(),
+const PRIVATE = dataStore.create();
 
 /**
  * Menu widget
@@ -25,7 +24,7 @@ PRIVATE = dataStore.create(),
  *
  * @fires Menu#item-click
  */
-Menu = {
+const Menu = EventEmitter.extend(Widget).extend(/** @lends Menu.prototype */{
     init: function(options){
         var inst = {
             opt: objectExtend({}, this.getFactory().defaults, options)
@@ -38,12 +37,37 @@ Menu = {
         if (inst.opt.items) {
             this.setItems(inst.opt.items);
         }
+
+        this.onDestroy(() => {
+            // Destroy all Compose object
+            Object.keys(inst).forEach(function (prop) {
+                if (inst[prop]) {
+                    [
+                        "destroy",      // Compose
+                        "remove",       // DOM Events Listeners
+                        "off"           // EventEmitter Listeners
+                    ].some((method) => {
+                        if (inst[prop][method]) {
+                            inst[prop][method]();
+                            return true;
+                        }
+                    });
+
+                    inst[prop] = undefined;
+                }
+            });
+
+            PRIVATE['delete'](this);
+        });
     },
 
     /**
      * Sets the items of the menu
      *
-     * @param {HTMLElement|Array<Object>} items
+     * @param {HTMLElement|Array<Object|Widget>} items
+     * If an `HTMLElement` is used on input, then the entire element is used as
+     * the menu items.
+     * An array of `Object` or `Widget` instances can also be used.
      */
     setItems: function(items){
         var $ui = this.getEle();
@@ -68,34 +92,40 @@ Menu = {
         }
 
         $ui.appendChild(items.reduce((content, item) => {
-            var itemSetup = objectExtend({
-                    title:      'na',
-                    onClick:    null
-                }, item),
-                menuItem = parseHTML(fillTemplate(menuItemTemplate, itemSetup)).firstChild;
+            // If item is a Widget, then just append that widget to the content
+            if (item.appendTo) {
+                let $li = parseHTML("<li></li>").firstChild;
+                item.appendTo($li);
+                content.appendChild($li);
 
-            domAddEventListener(menuItem, "click", () => {
-                /**
-                 * User clicked on an item
-                 *
-                 * @event Menu#item-click
-                 * @type {Object}
-                 */
-                this.emit("item-click", item);
+            } else {
+                var itemSetup = objectExtend({
+                        title:      'na',
+                        onClick:    null
+                    }, item),
+                    menuItem = parseHTML(fillTemplate(menuItemTemplate, itemSetup)).firstChild;
 
-                if (itemSetup.onClick) {
-                    itemSetup.onClick();
-                }
-            }, false);
+                domAddEventListener(menuItem, "click", () => {
+                    /**
+                     * User clicked on an item
+                     *
+                     * @event Menu#item-click
+                     * @type {Object}
+                     */
+                    this.emit("item-click", item);
 
-            content.appendChild(menuItem);
+                    if (itemSetup.onClick) {
+                        itemSetup.onClick();
+                    }
+                }, false);
+
+                content.appendChild(menuItem);
+            }
 
             return content;
         }, document.createDocumentFragment()));
     }
-};
-
-Menu = EventEmitter.extend(Widget, Menu);
+});
 
 Menu.defaults = {
     items: null
