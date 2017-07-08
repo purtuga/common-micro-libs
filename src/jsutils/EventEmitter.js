@@ -256,13 +256,31 @@ function getSetup(){
         });
 
         // When this object is destroyed, remove all data
-        this.onDestroy(function(){
-            if (PRIVATE.has(this)) {
-                PRIVATE['delete'](this); // using ['delete'] because of IE
-            }
-        }.bind(this));
+        if (this.onDestroy) {
+            this.onDestroy(function(){
+                if (PRIVATE.has(this)) {
+                    PRIVATE['delete'](this); // using ['delete'] because of IE
+                }
+            }.bind(this));
+        }
     }
     return PRIVATE.get(this);
 }
+
+/**
+ * Adds event emitter functionality to an object
+ *
+ * @param {Object} target
+ */
+EventEmitter.mixin = function (target) {
+    if (target) {
+        ["on", "off", "emit", "once", "pipe"].forEach(method => {
+            Object.defineProperty(target, method, {
+                configurable: true,
+                value: EventEmitter.prototype[method].bind(target)
+            });
+        });
+    }
+};
 
 export default EventEmitter;
