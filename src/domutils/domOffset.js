@@ -1,10 +1,13 @@
 import domPositionedParent from "./domPositionedParent"
 
 /**
- * Get an element's current position (`top`, `left`) relative to document that it
- * is displayed in.
+ * Get an element's position (`top`, `left`) relative to document that it
+ * is displayed in. This method take into consideration any scrolling the
+ * document may currently have, so that the return value is always consistent
+ * as if the document was not scrolled at all.
  *
  * @param {HTMLElement} ele
+ *
  * @param {Boolean} [fromOffsetParent=false]
  *  If true, then the `left`/`top` values of `ele` will be calculated against
  *  its positioned parent element - which might not be the viewport.
@@ -35,10 +38,10 @@ export default function domOffset(ele, fromOffsetParent) {
         let elePositionedParent = domPositionedParent(ele);
 
         if (elePositionedParent !== eleOwnerDocEle) {
-            let eleParentOffset     = domOffset();
+            let eleParentOffset     = domOffset(elePositionedParent);
 
             response.top    = response.top - eleParentOffset.top ;      // eleParentOffset.scrollTop - eleParentOffset.clientTop;
-            response.left   =  response.left - eleParentOffset.left;      // eleParentOffset.scrollLeft - eleParentOffset.clientLeft;
+            response.left   = response.left - eleParentOffset.left;      // eleParentOffset.scrollLeft - eleParentOffset.clientLeft;
 
             return response;
         }
