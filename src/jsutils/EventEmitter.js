@@ -2,10 +2,11 @@ import Compose   from "./Compose"
 import dataStore from "./dataStore"
 
 //----------------------------------------------------------------
-const PRIVATE         = dataStore.create();
-const arraySlice      = Array.prototype.slice;
-const isFunction      = function(fn){return typeof fn === "function";};
-const objectCreate    = Object.create;
+const PRIVATE           = dataStore.create();
+const arraySlice        = Array.prototype.slice;
+const isFunction        = function(fn){return typeof fn === "function";};
+const objectCreate      = Object.create;
+const objectKeys        = Object.keys;
 
 /**
  * Emits events. Use it to extend other modules and thus add events to them.
@@ -52,7 +53,7 @@ const EventEmitter = Compose.extend(/** @lends EventEmitter.prototype */{
          * EventEmitter Listener object, returned when one of the listener setter methods
          * (ex. `on()`, `once()`, `pipe`) are used.
          *
-         * @typedef {Object} EventEmitter#EventListener
+         * @typedef {Object} EventEmitter~EventListener
          *
          * @property {Object} listeners
          *  An object with the individual listeners. Each respective event listener
@@ -63,7 +64,7 @@ const EventEmitter = Compose.extend(/** @lends EventEmitter.prototype */{
          */
         let response = objectCreate({
             off: function(){
-                Object.keys(events).forEach(eventName => events[eventName].off());
+                objectKeys(events).forEach(eventName => events[eventName].off());
             }
         });
 
@@ -114,7 +115,7 @@ const EventEmitter = Compose.extend(/** @lends EventEmitter.prototype */{
 
         let response = objectCreate({
             off: function(){
-                Object.keys(events).forEach(eventName => events[eventName].off());
+                objectKeys(events).forEach(eventName => events[eventName].off());
             }
         });
 
@@ -230,6 +231,16 @@ const EventEmitter = Compose.extend(/** @lends EventEmitter.prototype */{
                 pipes[callbackIndex] = null;
             }
         });
+    },
+
+    /**
+     * Returns a boolean indicating if the current EventEmitter has listener
+     * @returns {Boolean}
+     */
+    hasListeners() {
+        const { listeners, pipes } = getSetup.call(this);
+        return objectKeys(listeners).some(evName => listeners[evName].some(evListener => !!evListener)) ||
+                pipes.some(evEmitter => !!evEmitter);
     }
 });
 
