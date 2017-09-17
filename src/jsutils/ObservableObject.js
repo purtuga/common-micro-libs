@@ -1,6 +1,7 @@
-import Compose       from "./Compose"
-import dataStore     from "./dataStore"
-import EventEmitter  from "./EventEmitter"
+import Compose          from "./Compose"
+import objectExtend     from "./objectExtend"
+import dataStore        from "./dataStore"
+import EventEmitter     from "./EventEmitter"
 
 //=======================================================
 var
@@ -53,6 +54,12 @@ objectHasOwnProperty    = Object.prototype.hasOwnProperty,
  *
  */
 ObservableObject = /** @lends ObservableObject.prototype */{
+    init(model) {
+        if (model) {
+            objectExtend(this, model);
+        }
+    },
+
     /**
      * Add a callback to changes on a given property
      *
@@ -85,6 +92,22 @@ ObservableObject = /** @lends ObservableObject.prototype */{
         var inst = getInstance.call(this);
         if (inst[prop]) {
             return inst.off(prop, callback);
+        }
+    },
+
+    /**
+     * Add a callback for changes on a given property that is called only once
+     *
+     * @param {String} prop
+     *  Object property name
+     *
+     * @param {Function} callback
+     *  The callback that should be removed.
+     */
+    once: function(prop, callback){
+        if (objectHasOwnProperty.call(this, prop)) {
+            watchProp.call(this, prop);
+            return getInstance.call(this).once(prop, callback);
         }
     },
 

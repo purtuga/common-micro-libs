@@ -1,1 +1,2 @@
 require("./collection");
+require("./observableObject");
