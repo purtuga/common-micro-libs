@@ -3,14 +3,6 @@ const test              = require("tape");
 const ObservableObject  = require("../src/jsutils/ObservableObject").default;
 
 test("ObservableObject", t => {
-    const getCallback = () => {
-        const cb = () => {
-            cb.callCount++;
-        };
-        cb.callCount = 0;
-        return cb;
-    };
-
     t.equal(typeof ObservableObject, "function", "is defined");
     t.equal(typeof ObservableObject.create, "function", "has .create() method");
 
@@ -31,13 +23,14 @@ test("ObservableObject", t => {
     });
 
     t.test("Events", st => {
-        st.plan(1);
+        st.plan(2);
 
         const model = ObservableObject.create({name: "paul"});
 
         model.once("name", () => {
             st.ok(true, "change event triggered");
         });
+        st.equal(model.name, "paul", "has original value after watch");
         model.name = "paul 1";
     });
 

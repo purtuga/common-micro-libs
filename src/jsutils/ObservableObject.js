@@ -4,12 +4,11 @@ import dataStore        from "./dataStore"
 import EventEmitter     from "./EventEmitter"
 
 //=======================================================
-var
-PRIVATE                 = dataStore.create(),
-GLOBAL_NOTIFY_DELAY     = 10,
+const PRIVATE                 = dataStore.create();
+const GLOBAL_NOTIFY_DELAY     = 10;
 
-objectDefineProperty    = Object.defineProperty,
-objectHasOwnProperty    = Object.prototype.hasOwnProperty,
+const objectDefineProperty    = Object.defineProperty;
+const objectHasOwnProperty    = Object.prototype.hasOwnProperty;
 
 /**
  * Adds the ability to observe `Object` property values for changes.
@@ -53,7 +52,7 @@ objectHasOwnProperty    = Object.prototype.hasOwnProperty,
  * });
  *
  */
-ObservableObject = /** @lends ObservableObject.prototype */{
+let ObservableObject = /** @lends ObservableObject.prototype */{
     init(model) {
         if (model) {
             objectExtend(this, model);
@@ -124,7 +123,7 @@ ObservableObject = /** @lends ObservableObject.prototype */{
             watched[prop].notify();
         }
     }
-},
+};
 
 /**
  * Returns the private Instance data for this object
@@ -134,7 +133,7 @@ ObservableObject = /** @lends ObservableObject.prototype */{
  *
  * @return {EventEmitter}
  */
-getInstance = function(){
+function getInstance(){
     if (!PRIVATE.has(this)) {
         var instData = EventEmitter.create();
         instData.watched = {};
@@ -150,7 +149,7 @@ getInstance = function(){
         }
     }
     return PRIVATE.get(this);
-},
+}
 
 /**
  * Checks to see if a given property on this object already has a watcher
@@ -161,7 +160,7 @@ getInstance = function(){
  *
  * @param {String} prop
  */
-watchProp = function(prop){
+function watchProp(prop){
     let observable      = this;
     let inst            = getInstance.call(observable);
     let watched         = inst.watched;
@@ -248,7 +247,7 @@ watchProp = function(prop){
             } catch(e){}
         }
     }
-};
+}
 
 ObservableObject = Compose.extend(ObservableObject);
 
