@@ -1,9 +1,9 @@
 import Compose      from "./Compose"
-import dataStore    from "./dataStore"
 import EventEmitter from "./EventEmitter"
 
-
+//==============================================================
 const ArrayPrototype    = Array.prototype;
+const isArray           = Array.isArray;
 const objectDefineProp  = Object.defineProperty;
 const changeMethods     = [
     'pop',
@@ -28,7 +28,7 @@ const changeMethods     = [
  */
 var Collection = /** @lends Collection.prototype */{
     init: function(initialValues){
-        if (Array.isArray(initialValues)) {
+        if (isArray(initialValues)) {
             this.push(...initialValues);
         }
     },
@@ -76,6 +76,12 @@ Object.getOwnPropertyNames(ArrayPrototype).forEach(function(method){
 
     Collection[method] = function(){
         var response = ArrayPrototype[method].apply(this, arguments);
+
+        // If the response is an array and its not this instance, then
+        // ensure it is an instance of this Collection
+        if (isArray(response) && response !== this) {
+            response = this.getFactory().create(response);
+        }
 
         // If Array method can manipulate the array, then emit event
         if (doEvents) {

@@ -116,7 +116,6 @@ export const DomElementResizeMonitor = EventEmitter.extend(/** @lends DomElement
 
     /**
      * Detach monitor from the parent element
-     *
      */
     detach() {
         const inst = PRIVATE.get(this);

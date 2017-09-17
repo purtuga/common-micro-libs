@@ -2,7 +2,7 @@ import Compose       from "./Compose"
 import dataStore     from "./dataStore"
 import EventEmitter  from "./EventEmitter"
 
-
+//=======================================================
 var
 PRIVATE                 = dataStore.create(),
 GLOBAL_NOTIFY_DELAY     = 10,
