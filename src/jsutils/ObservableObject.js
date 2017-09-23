@@ -130,7 +130,7 @@ let ObservableObject = Compose.extend(/** @lends ObservableObject.prototype */{
     emit: function(prop){
         var watched = getInstance.call(this).watched;
         if (watched[prop]) {
-            watched[prop].notify();
+            watched[prop].notify(true);
         }
     }
 });
@@ -205,7 +205,8 @@ function makePropWatchable(observable, propName, valueGetter, valueSetter){
             oldVal: currentValue,
             newVal: currentValue,
             queued: false,
-            notify: function(delay){
+            isComputed: false,
+            notify: function(noDelay){
                 // Queue the notification if not yet done
                 if (watched[propName].queued) {
                     return;
@@ -219,7 +220,7 @@ function makePropWatchable(observable, propName, valueGetter, valueSetter){
                     watched[propName].dependees.forEach(cb => cb.call(observable));
                 };
 
-                if (!delay) {
+                if (noDelay) {
                     callListeners();
                     return;
                 }
@@ -250,6 +251,10 @@ function makePropWatchable(observable, propName, valueGetter, valueSetter){
 
             // Setter is how we detect changes to the value.
             set: function(newValue){
+                if (watched[propName].isComputed) {
+                    return; // TODO: should throw? or console.warn  ?
+                }
+
                 let oldValue = valueGetter ? valueGetter() : watched[propName].newVal;
 
                 if (valueSetter) {
@@ -264,7 +269,7 @@ function makePropWatchable(observable, propName, valueGetter, valueSetter){
                 // Only trigger if values are different. Also, only add a trigger
                 // if one is not already queued.
                 if (!watched[propName].queued && newValue !== oldValue) {
-                    watched[propName].notify(true);
+                    watched[propName].notify();
                 }
             }
         });
@@ -292,14 +297,16 @@ function createComputed(obj, propName, valueGenerator) {
         let dependencyChangeNotifier = () => {
             value = null;
             runValueGenerator = true;
+            // Notify listeners to this property that value has changed
+            getInstance.call(obj).watched[propName].notify();
         };
         const addToDependeeList = () => {
-            if (dependeeList.indexOf(addToDependeeList) === -1) {
+            if (dependeeList.indexOf(dependencyChangeNotifier) === -1) {
                 dependeeList.push(dependencyChangeNotifier);
             }
         };
         const removeFromDependeeList = () => {
-            let index = dependeeList.indexOf(addToDependeeList);
+            let index = dependeeList.indexOf(dependencyChangeNotifier);
             if (index !== -1) {
                 dependeeList.splice(index, 1);
             }
@@ -324,8 +331,7 @@ function createComputed(obj, propName, valueGenerator) {
                 }
 
                 removeFromDependeeList();
-
-                return value
+                return value;
             },
 
             // Setter
@@ -333,6 +339,8 @@ function createComputed(obj, propName, valueGenerator) {
                 // FIXME: should we output to console?
             }
         );
+
+        getInstance.call(obj).watched[propName].isComputed = true;
     }
 }
 
