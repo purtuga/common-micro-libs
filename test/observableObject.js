@@ -170,7 +170,62 @@ test("ObservableObject", t => {
     });
 
     t.test("Computed properties with dependencies on other Computed", st => {
+        st.plan(6);
 
+        let obj = ObservableObject.create({
+            firstName: "Paul",
+            lastName: "Tavares",
+            location: "NJ"
+        });
+
+        let generateFullName = function() {
+            generateFullName.count++;
+            return `${ this.firstName } ${ this.lastName }`;
+        };
+        generateFullName.count = 0;
+
+        ObservableObject.createComputed(obj, "fullName", generateFullName);
+
+        let generateNameAndLocation = function() {
+            generateNameAndLocation.count++;
+            return `${ this.fullName } (${ this.location })`;
+        };
+        generateNameAndLocation.count = 0;
+
+        ObservableObject.createComputed(obj, "nameAndLocation", generateNameAndLocation);
+
+        let nameAndLocationChgListener = () => nameAndLocationChgListener.count++;
+        nameAndLocationChgListener.count = 0;
+
+        //------------------------------------------------------------
+        st.equal(obj.nameAndLocation, "Paul Tavares (NJ)", "Computed is generated");
+
+        obj.firstName = "John";
+        delay()
+            .then(() => {
+                st.equal(obj.nameAndLocation, "John Tavares (NJ)", "Computed has change from computed dependency");
+
+                obj.location = "NY";
+                return delay();
+            })
+            .then(() => {
+                st.equal(obj.nameAndLocation, "John Tavares (NY)", "Computed reflects changes dependency change");
+
+                obj.on("nameAndLocation", nameAndLocationChgListener);
+                obj.location = "NJ";
+                return delay();
+            })
+            .then(() => {
+                st.equal(nameAndLocationChgListener.count, 1, "Change of direct dependency trigger event");
+
+                obj.firstName = "Paul";
+                return delay();
+            })
+            .then(() => {
+                // FIXME: the event should only have triggered 2 times at this point. Root cause: fact that events are not batched globally?
+                st.equal(nameAndLocationChgListener.count, 3, "Change of computed dependency trigger event");
+                st.equal(obj.nameAndLocation, "Paul Tavares (NJ)", "Computed has expected value");
+            });
     });
 
     t.end();
