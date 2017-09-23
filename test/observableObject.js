@@ -1,7 +1,7 @@
-require                 = require('@std/esm')(module, { cjs: true, esm: 'js' });
+require                 = require("@std/esm")(module, { cjs: true, esm: "js" });
 const test              = require("tape");
 const ObservableObject  = require("../src/jsutils/ObservableObject").default;
-const delay             = (ms) => new Promise(resolve => setTimeout(resolve, ms || 2));
+const delay             = ms => new Promise(resolve => setTimeout(resolve, ms || 2));
 
 test("ObservableObject", t => {
     t.equal(typeof ObservableObject, "function", "is defined");
@@ -119,6 +119,46 @@ test("ObservableObject", t => {
                 st.equal(generateFullName.count, 3, "Value generator called three times");
             })
             .catch(e => console.log(e));
+    });
+
+    t.test("Computed properties from different observable objects", st => {
+        st.plan(3);
+
+        let objFirst = ObservableObject.create({
+            firstName: "Paul"
+        });
+
+        let objLast = ObservableObject.create({
+            lastName: "Tavares"
+        });
+
+        let objFull = ObservableObject.create();
+
+        let generateFullName = function() {
+            generateFullName.count++;
+            return `${ objFirst.firstName } ${ objLast.lastName }`;
+        };
+        generateFullName.count = 0;
+        ObservableObject.createComputed(objFull, "fullName", generateFullName);
+
+        let fullNameChgListener = () => fullNameChgListener.count++;
+        fullNameChgListener.count = 0;
+
+        //-----------------------------------------
+        st.equal(objFull.fullName, "Paul Tavares", "Value generated returned expected value");
+
+        objFirst.firstName = "John";
+        delay()
+            .then(() => {
+                st.equal(objFull.fullName, "John Tavares", "Changes to dependencies triggers new computed value");
+
+                objFull.on("fullName", fullNameChgListener);
+                objLast.lastName = "Tavares 1";
+                return delay();
+            })
+            .then(() => {
+                st.equal(fullNameChgListener.count, 1, "Triggers event when dependency changes");
+            });
     });
 
     t.test("Computed Emits Events", st => {

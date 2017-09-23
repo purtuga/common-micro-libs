@@ -5,11 +5,17 @@ import EventEmitter     from "./EventEmitter"
 import nextTick         from "./nextTick"
 
 //=======================================================
-const PRIVATE                 = dataStore.create();
+const PRIVATE               = dataStore.create();
+const ARRAY_PROTOTYPE       = Array.prototype;
+const OBJECT                = Object;
 
 // aliases
-const objectDefineProperty    = Object.defineProperty;
-const objectHasOwnProperty    = Object.prototype.hasOwnProperty;
+const bindCallTo            = Function.call.bind.bind(Function.call);
+const objectDefineProperty  = OBJECT.defineProperty;
+const objectHasOwnProperty  = bindCallTo(OBJECT.prototype.hasOwnProperty);
+const arrayIndexOf          = bindCallTo(ARRAY_PROTOTYPE.indexOf);
+const arrayForEach          = bindCallTo(ARRAY_PROTOTYPE.forEach);
+const objectKeys            = Object.keys;
 
 let dependeeList = [];
 
@@ -65,7 +71,7 @@ let ObservableObject = Compose.extend(/** @lends ObservableObject.prototype */{
         const opt = objectExtend({}, this.getFactory().defaults, options);
 
         if (opt.watchAll) {
-            Object.keys(this).forEach(propName => makePropWatchable(this, propName));
+            arrayForEach(objectKeys(this), propName => makePropWatchable(this, propName));
         }
     },
 
@@ -82,7 +88,7 @@ let ObservableObject = Compose.extend(/** @lends ObservableObject.prototype */{
      * @return {EventListener}
      */
     on: function(prop, callback){
-        if (objectHasOwnProperty.call(this, prop)) {
+        if (objectHasOwnProperty(this, prop)) {
             makePropWatchable(this, prop);
             return getInstance.call(this).on(prop, callback);
         }
@@ -114,7 +120,7 @@ let ObservableObject = Compose.extend(/** @lends ObservableObject.prototype */{
      *  The callback that should be removed.
      */
     once: function(prop, callback){
-        if (objectHasOwnProperty.call(this, prop)) {
+        if (objectHasOwnProperty(this, prop)) {
             makePropWatchable(this, prop);
             return getInstance.call(this).once(prop, callback);
         }
@@ -200,24 +206,25 @@ function makePropWatchable(observable, propName, valueGetter, valueSetter){
     // if we're able to remove the current property (ex. Constants would fail),
     // then change this attribute to be watched
     if (delete observable[propName]) {
-        watched[propName] = {
-            dependees: [],
+        const dependees = [];
+        const propSetup = watched[propName] = {
+            dependees: dependees,
             oldVal: currentValue,
             newVal: currentValue,
             queued: false,
             isComputed: false,
             notify: function(noDelay){
                 // Queue the notification if not yet done
-                if (watched[propName].queued) {
+                if (propSetup.queued) {
                     return;
                 }
 
-                watched[propName].queued = true;
+                propSetup.queued = true;
 
                 const callListeners = function(){
-                    watched[propName].queued = false;
-                    inst.emit(propName, watched[propName].newVal, watched[propName].oldVal);
-                    watched[propName].dependees.forEach(cb => cb.call(observable));
+                    propSetup.queued = false;
+                    inst.emit(propName, propSetup.newVal, propSetup.oldVal);
+                    arrayForEach(dependees, cb => cb.call(observable));
                 };
 
                 if (noDelay) {
@@ -239,37 +246,37 @@ function makePropWatchable(observable, propName, valueGetter, valueSetter){
                 // If there is a dependee listening for changes right now, then
                 // store it for future notification
                 if (dependeeList && dependeeList.length) {
-                    dependeeList.forEach(dependeeCallback => {
-                        if (watched[propName].dependees.indexOf(dependeeCallback) === -1) {
-                            watched[propName].dependees.push(dependeeCallback);
+                    arrayForEach(dependeeList, dependeeCallback => {
+                        if (arrayIndexOf(dependees, dependeeCallback) === -1) {
+                            dependees.push(dependeeCallback);
                         }
                     });
                 }
 
-                return valueGetter ? valueGetter() : watched[propName].newVal;
+                return valueGetter ? valueGetter() : propSetup.newVal;
             },
 
             // Setter is how we detect changes to the value.
             set: function(newValue){
-                if (watched[propName].isComputed) {
+                if (propSetup.isComputed) {
                     return; // TODO: should throw? or console.warn  ?
                 }
 
-                let oldValue = valueGetter ? valueGetter() : watched[propName].newVal;
+                let oldValue = valueGetter ? valueGetter() : propSetup.newVal;
 
                 if (valueSetter) {
                     valueSetter.call(observable, newValue);
 
                 } else {
-                    watched[propName].oldVal = oldValue;
-                    watched[propName].newVal = newValue;
+                    propSetup.oldVal = oldValue;
+                    propSetup.newVal = newValue;
                 }
 
                 // Dirty checking...
                 // Only trigger if values are different. Also, only add a trigger
                 // if one is not already queued.
-                if (!watched[propName].queued && newValue !== oldValue) {
-                    watched[propName].notify();
+                if (!propSetup.queued && newValue !== oldValue) {
+                    propSetup.notify();
                 }
             }
         });
@@ -301,12 +308,12 @@ function createComputed(obj, propName, valueGenerator) {
             getInstance.call(obj).watched[propName].notify();
         };
         const addToDependeeList = () => {
-            if (dependeeList.indexOf(dependencyChangeNotifier) === -1) {
+            if (arrayIndexOf(dependeeList, dependencyChangeNotifier) === -1) {
                 dependeeList.push(dependencyChangeNotifier);
             }
         };
         const removeFromDependeeList = () => {
-            let index = dependeeList.indexOf(dependencyChangeNotifier);
+            let index = arrayIndexOf(dependeeList, dependencyChangeNotifier);
             if (index !== -1) {
                 dependeeList.splice(index, 1);
             }
@@ -360,7 +367,7 @@ ObservableObject.createComputed = createComputed;
  */
 ObservableObject.mixin = function(obj){
     if (obj) {
-        Object.keys(ObservableObject.prototype).forEach(function(method){
+        arrayForEach(objectKeys(ObservableObject.prototype), function(method){
             if (!(method in obj) || obj[method] !== ObservableObject.prototype[method]) {
                 objectDefineProperty(obj, method, {
                     value:          ObservableObject.prototype[method],
