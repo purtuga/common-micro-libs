@@ -90,7 +90,7 @@ let ObservableObject = Compose.extend(/** @lends ObservableObject.prototype */{
     on: function(prop, callback){
         if (objectHasOwnProperty(this, prop)) {
             makePropWatchable(this, prop);
-            return getInstance.call(this).on(prop, callback);
+            return getInstance(this).on(prop, callback);
         }
     },
 
@@ -104,7 +104,7 @@ let ObservableObject = Compose.extend(/** @lends ObservableObject.prototype */{
      *  The callback that should be removed.
      */
     off: function(prop, callback){
-        var inst = getInstance.call(this);
+        var inst = getInstance(this);
         if (inst[prop]) {
             return inst.off(prop, callback);
         }
@@ -122,7 +122,7 @@ let ObservableObject = Compose.extend(/** @lends ObservableObject.prototype */{
     once: function(prop, callback){
         if (objectHasOwnProperty(this, prop)) {
             makePropWatchable(this, prop);
-            return getInstance.call(this).once(prop, callback);
+            return getInstance(this).once(prop, callback);
         }
     },
 
@@ -134,7 +134,7 @@ let ObservableObject = Compose.extend(/** @lends ObservableObject.prototype */{
      * @param {String} prop
      */
     emit: function(prop){
-        var watched = getInstance.call(this).watched;
+        var watched = getInstance(this).watched;
         if (watched[prop]) {
             watched[prop].notify(true);
         }
@@ -145,26 +145,26 @@ let ObservableObject = Compose.extend(/** @lends ObservableObject.prototype */{
  * Returns the private Instance data for this object
  *
  * @private
- * @this ObservableObject
+ * @param {Object} observableObj
  *
  * @return {EventEmitter}
  */
-function getInstance(){
-    if (!PRIVATE.has(this)) {
+function getInstance(observableObj){
+    if (!PRIVATE.has(observableObj)) {
         var instData = EventEmitter.create();
         instData.watched = {};
 
-        PRIVATE.set(this, instData);
+        PRIVATE.set(observableObj, instData);
 
-        if (this.onDestroy) {
-            this.onDestroy(function(){
+        if (observableObj.onDestroy) {
+            observableObj.onDestroy(function(){
                 delete instData.watched;
-                PRIVATE.delete(this);
+                PRIVATE.delete(observableObj);
                 instData.destroy();
-            }.bind(this));
+            }.bind(observableObj));
         }
     }
-    return PRIVATE.get(this);
+    return PRIVATE.get(observableObj);
 }
 
 /**
@@ -179,7 +179,7 @@ function getInstance(){
  *
  */
 function makePropWatchable(observable, propName, valueGetter, valueSetter){
-    let inst            = getInstance.call(observable);
+    let inst            = getInstance(observable);
     let watched         = inst.watched;
     let currentValue, propDescriptor;
 
@@ -305,7 +305,7 @@ function createComputed(obj, propName, valueGenerator) {
             value = null;
             runValueGenerator = true;
             // Notify listeners to this property that value has changed
-            getInstance.call(obj).watched[propName].notify();
+            getInstance(obj).watched[propName].notify();
         };
         const addToDependeeList = () => {
             if (arrayIndexOf(dependeeList, dependencyChangeNotifier) === -1) {
@@ -347,13 +347,12 @@ function createComputed(obj, propName, valueGenerator) {
             }
         );
 
-        getInstance.call(obj).watched[propName].isComputed = true;
+        getInstance(obj).watched[propName].isComputed = true;
     }
 }
 
 
 ObservableObject.createComputed = createComputed;
-
 
 /**
  * Adds ObservableObject capabilities to an object.
