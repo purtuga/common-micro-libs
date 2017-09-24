@@ -38,3 +38,4 @@ my.*
 _SpecRunner.html
 .grunt*
 .idea*
+.esm-cache
