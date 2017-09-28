@@ -18,11 +18,51 @@ test("ObservableObject", t => {
         st.equal(typeof model.on, "function", "has .on() method");
         st.equal(typeof model.once, "function", "has .once() method");
         st.equal(typeof model.destroy, "function", "has .destroy() method");
+        st.equal(typeof model.assign, "function", "has .assign() method");
 
         model.destroy();
         st.equal(model.isDestroyed, true, ".isDestroy is true");
 
         st.end();
+    });
+
+    t.test(".assign() method auto create watchable properties", st => {
+        st.plan(7);
+
+        const model = ObservableObject.create({name: "paul"});
+        model.assign({ state: "NJ" }, { country: "USA" });
+
+        st.equal(model.state, "NJ", "observable includes new properties");
+        st.equal(model.country, "USA");
+
+        const allValueGenerator = () => {
+            allValueGenerator.count++;
+            return Object.keys(model).reduce((all, key) => {
+                if (key === "all") {
+                    return all;
+                }
+                return all += model[key];
+            }, "");
+        };
+        allValueGenerator.count = 0;
+
+        const allValueChangeListener = () => allValueChangeListener.count++;
+        allValueChangeListener.count = 0;
+
+        ObservableObject.createComputed(model, "all", allValueGenerator);
+
+        st.equal(/USA/.test(model.all), true, "Computed was created");
+        st.equal(allValueGenerator.count, 1, "value generator called once");
+
+        model.once("all", allValueChangeListener);
+        model.country = "Portugal";
+
+        delay()
+            .then(() => {
+                st.equal(allValueChangeListener.count, 1, "Change to a property created with assign emits events");
+                st.equal(/Portugal/.test(model.all), true);
+                st.equal(allValueGenerator.count, 2, "value generator called twice");
+            });
     });
 
     t.test("Emits Events", st => {

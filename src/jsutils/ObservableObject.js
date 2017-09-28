@@ -138,6 +138,18 @@ let ObservableObject = Compose.extend(/** @lends ObservableObject.prototype */{
         if (watched[prop]) {
             watched[prop].notify(true);
         }
+    },
+
+    /**
+     * Copies the properties of one or more objects into the current observable
+     * and makes those properties "watchable".
+     *
+     * @param {...Object} args
+     *
+     * @returns {Object}
+     */
+    assign(...args) {
+        return observableAssign(this, ...args);
     }
 });
 
@@ -225,6 +237,7 @@ function makePropWatchable(observable, propName, valueGetter, valueSetter){
                     propSetup.queued = false;
                     inst.emit(propName, propSetup.newVal, propSetup.oldVal);
                     arrayForEach(dependees, cb => cb.call(observable));
+                    propSetup.oldVal = null;
                 };
 
                 if (noDelay) {
@@ -307,17 +320,6 @@ function createComputed(obj, propName, valueGenerator) {
             // Notify listeners to this property that value has changed
             getInstance(obj).watched[propName].notify();
         };
-        const addToDependeeList = () => {
-            if (arrayIndexOf(dependeeList, dependencyChangeNotifier) === -1) {
-                dependeeList.push(dependencyChangeNotifier);
-            }
-        };
-        const removeFromDependeeList = () => {
-            let index = arrayIndexOf(dependeeList, dependencyChangeNotifier);
-            if (index !== -1) {
-                dependeeList.splice(index, 1);
-            }
-        };
 
         makePropWatchable(obj, propName,
             // Getter
@@ -326,18 +328,18 @@ function createComputed(obj, propName, valueGenerator) {
                     return value;
                 }
 
-                runValueGenerator = false;
-                addToDependeeList();
+                setDependencyTracker(dependencyChangeNotifier);
 
                 try {
                     value = valueGenerator.call(obj);
                 }
                 catch(e) {
-                    removeFromDependeeList();
+                    unsetDependencyTracker(dependencyChangeNotifier);
                     throw e;
                 }
 
-                removeFromDependeeList();
+                unsetDependencyTracker(dependencyChangeNotifier);
+                runValueGenerator = false;
                 return value;
             },
 
@@ -350,6 +352,44 @@ function createComputed(obj, propName, valueGenerator) {
         getInstance(obj).watched[propName].isComputed = true;
     }
 }
+
+function setDependencyTracker(dependeeNotifier) {
+    if (dependeeNotifier && arrayIndexOf(dependeeList, dependeeNotifier) === -1) {
+        dependeeList.push(dependeeNotifier);
+    }
+}
+
+function unsetDependencyTracker(dependeeNotifier) {
+    if (!dependeeNotifier) {
+        return;
+    }
+    const index = arrayIndexOf(dependeeList, dependeeNotifier);
+    if (index !== -1) {
+        dependeeList.splice(index, 1);
+    }
+}
+
+/**
+ * Assign the properties of one (or more) objects to the observable and
+ * makes those properties "watchable"
+ *
+ * @param {Object} observable
+ * @param {...Object} objs
+ *
+ * @return {Object} observable
+ */
+function observableAssign(observable, ...objs) {
+    if (objs.length) {
+        arrayForEach(objs, obj => {
+            arrayForEach(objectKeys(obj), key => {
+                observable[key] = obj[key];
+                makePropWatchable(observable, key);
+            });
+        });
+    }
+    return observable;
+}
+
 
 
 ObservableObject.createComputed = createComputed;
