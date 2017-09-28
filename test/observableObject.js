@@ -123,7 +123,7 @@ test("ObservableObject", t => {
     });
 
     t.test("Computed properties", st => {
-        st.plan(8);
+        st.plan(11);
 
         let obj = ObservableObject.create({
             firstName: "Paul",
@@ -136,8 +136,9 @@ test("ObservableObject", t => {
         };
         generateFullName.count = 0;
 
-        ObservableObject.createComputed(obj, "fullName", generateFullName);
+        const fullNameComputedProp = ObservableObject.createComputed(obj, "fullName", generateFullName);
 
+        st.equal(typeof fullNameComputedProp.destroy, "function", "Computed returns object with .destroy() method");
         st.equal(generateFullName.count, 0, "Value Generator does not run on create of computed");
         st.equal(obj.fullName, "Paul Tavares", "creates Computed value");
         st.equal(generateFullName.count, 1, "value generated called once");
@@ -157,6 +158,15 @@ test("ObservableObject", t => {
                 st.equal(generateFullName.count, 2, "Value generated NOT called yet after dependency change");
                 st.equal(obj.fullName, "john smith", "change to multiple depdencies props updates computed");
                 st.equal(generateFullName.count, 3, "Value generator called three times");
+
+                fullNameComputedProp.destroy();
+                obj.firstName = "Tony";
+
+                return delay();
+            })
+            .then(() => {
+                st.equal(obj.fullName, "john smith", "Computed preserves last value after computed.destroy()");
+                st.equal(generateFullName.count, 3, "Computed value generator is NOT called after computed.destroy()");
             })
             .catch(e => console.log(e));
     });
