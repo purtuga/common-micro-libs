@@ -19,6 +19,7 @@ test("ObservableObject", t => {
         st.equal(typeof model.once, "function", "has .once() method");
         st.equal(typeof model.destroy, "function", "has .destroy() method");
         st.equal(typeof model.assign, "function", "has .assign() method");
+        st.equal(typeof model.setProp, "function", "has .setProp() method");
 
         model.destroy();
         st.equal(model.isDestroyed, true, ".isDestroy is true");
@@ -63,6 +64,20 @@ test("ObservableObject", t => {
                 st.equal(/Portugal/.test(model.all), true);
                 st.equal(allValueGenerator.count, 2, "value generator called twice");
             });
+    });
+
+    t.test(".setProp() method", st => {
+        st.plan(3);
+
+        const obj = ObservableObject.create();
+        let setReturnValue = obj.setProp("name", "paul");
+
+        st.equal(setReturnValue, "paul", "setProp() return value that was given on input");
+        obj.once("name", () => {
+            st.pass("prop was created as watchable");
+            st.equal(obj.name, "john", "new value was set");
+        });
+        obj.name = "john";
     });
 
     t.test("Emits Events", st => {

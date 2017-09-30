@@ -20,6 +20,7 @@ const objectDefineProperty  = OBJECT.defineProperty;
 const objectHasOwnProperty  = bindCallTo(OBJECT.prototype.hasOwnProperty);
 const arrayIndexOf          = bindCallTo(ARRAY_PROTOTYPE.indexOf);
 const arrayForEach          = bindCallTo(ARRAY_PROTOTYPE.forEach);
+const arraySplice           = bindCallTo(ARRAY_PROTOTYPE.splice);
 const objectKeys            = Object.keys;
 
 let dependeeList = [];
@@ -150,6 +151,17 @@ const ObservableObject = Compose.extend(/** @lends ObservableObject.prototype */
      */
     assign(...args) {
         return observableAssign(this, ...args);
+    },
+
+    /**
+     * Sets a property on the observable object and automatically makes it watchable
+     *
+     * @param {String} propName
+     * @param {*} [value]
+     * @returns {*}
+     */
+    setProp(propName, value) {
+        return setProp(this, propName, value);
     }
 });
 
@@ -202,12 +214,12 @@ const PropertySetup = Compose.extend({
         const removeDependeeEvListener = onInternalEvent(EV_STOP_DEPENDEE_NOTIFICATION, cb => {
             const cbIndex = arrayIndexOf(dependees, cb);
             if (cbIndex !== -1) {
-                dependees.splice(cbIndex, 1);
+                arraySplice(dependees, cbIndex, 1);
             }
         });
 
         this.onDestroy(() => {
-            this.dependees.splice(0);
+            arraySplice(this.dependees, 0);
             removeDependeeEvListener.off();
             this._obj = null;
         })
@@ -242,10 +254,10 @@ const PropertySetup = Compose.extend({
         propSetup.queued = true;
 
         const notifyListeners = () => {
-            const observable = this._obj;
+            const {propName, _obj:observable} = this;
             propSetup.queued = false;
-            getInstance(observable).emit(this.propName, propSetup.newVal, propSetup.oldVal);
-            arrayForEach(this.dependees, cb => cb.call(observable));
+            getInstance(observable).emit(propName, propSetup.newVal, propSetup.oldVal);
+            arrayForEach(this.dependees, cb => cb.call(observable, propName));
             propSetup.oldVal = null;
         };
 
@@ -414,26 +426,66 @@ function createComputed(observable, propName, valueGenerator) {
     }
 }
 
+/**
+ * Allows for adding a Dependee notifier to the global list of dependency trackers.
+ *
+ * @param {ObservableObject~dependeeNotifier} dependeeNotifier
+ */
 function setDependencyTracker(dependeeNotifier) {
+
+    /**
+     * A function that will be called when a dependency value changes
+     *
+     * @callback ObservableObject~dependeeNotifier
+     * @param {String} propName
+     *  The ObservableObject property that changed
+     */
+
     if (dependeeNotifier && arrayIndexOf(dependeeList, dependeeNotifier) === -1) {
         dependeeList.push(dependeeNotifier);
     }
 }
 
+/**
+ * Removes a Dependee notifier from the global list of dependency trackers.
+ *
+ * @param {ObservableObject~dependeeNotifier} dependeeNotifier
+ */
 function unsetDependencyTracker(dependeeNotifier) {
     if (!dependeeNotifier) {
         return;
     }
     const index = arrayIndexOf(dependeeList, dependeeNotifier);
     if (index !== -1) {
-        dependeeList.splice(index, 1);
+        arraySplice(dependeeList, index, 1);
     }
 }
 
+/**
+ * Removes a Dependee notifier from any stored ObservableProperty list of dependees, thus
+ * stopping all notifications to that depenedee.
+ *
+ * @param {ObservableObject~dependeeNotifier} dependeeNotifier
+ */
 function stopDependeeNotifications(dependeeNotifier) {
     if (dependeeNotifier) {
         emitInternalEvent(EV_STOP_DEPENDEE_NOTIFICATION, dependeeNotifier);
     }
+}
+
+/**
+ * Sets a property on the Observable Object with the given value. Property will be
+ * create or updated and be made "watchable"
+ *
+ * @param {Object} observable
+ * @param {String} propName
+ * @param {*} [value]
+ *
+ * @return {*}
+ */
+function setProp(observable, propName, value) {
+    makePropWatchable(observable, propName);
+    return observable[propName] = value;
 }
 
 /**
