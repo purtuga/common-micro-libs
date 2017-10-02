@@ -25,6 +25,24 @@ const objectKeys            = Object.keys;
 
 let dependeeList = [];
 
+const queueDependeeNotifier = (() => {
+    const dependeeNotifiers = [];
+    const execNotifiers     = () => arrayForEach(arraySplice(dependeeNotifiers, 0), notifierCb => notifierCb());
+
+    return notifierCb => {
+        if (!notifierCb || arrayIndexOf(dependeeNotifiers, notifierCb) !== -1) {
+            return;
+        }
+
+        const callNextTick = !dependeeNotifiers.length;
+        dependeeNotifiers.push(notifierCb);
+
+        if (callNextTick) {
+            nextTick(execNotifiers);
+        }
+    };
+})();
+
 /**
  * Adds the ability to observe `Object` property values for changes.
  * Uses an internal `EventEmitter` instance to list and trigger events,
@@ -246,7 +264,10 @@ const PropertySetup = Compose.extend({
     notify(noDelay){
         const propSetup = this;
 
-        // Queue the notification if not yet done
+        // Queue up calling all dependee notifiers
+        arrayForEach(this.dependees, cb => queueDependeeNotifier(cb));
+
+        // If emitting of events for this property was already queued, exit
         if (propSetup.queued) {
             return;
         }
@@ -257,7 +278,6 @@ const PropertySetup = Compose.extend({
             const {propName, _obj:observable} = this;
             propSetup.queued = false;
             getInstance(observable).emit(propName, propSetup.newVal, propSetup.oldVal);
-            arrayForEach(this.dependees, cb => cb.call(observable, propName));
             propSetup.oldVal = null;
         };
 
@@ -429,18 +449,9 @@ function createComputed(observable, propName, valueGenerator) {
 /**
  * Allows for adding a Dependee notifier to the global list of dependency trackers.
  *
- * @param {ObservableObject~dependeeNotifier} dependeeNotifier
+ * @param {Function} dependeeNotifier
  */
-function setDependencyTracker(dependeeNotifier) {
-
-    /**
-     * A function that will be called when a dependency value changes
-     *
-     * @callback ObservableObject~dependeeNotifier
-     * @param {String} propName
-     *  The ObservableObject property that changed
-     */
-
+export function setDependencyTracker(dependeeNotifier) {
     if (dependeeNotifier && arrayIndexOf(dependeeList, dependeeNotifier) === -1) {
         dependeeList.push(dependeeNotifier);
     }
@@ -449,9 +460,9 @@ function setDependencyTracker(dependeeNotifier) {
 /**
  * Removes a Dependee notifier from the global list of dependency trackers.
  *
- * @param {ObservableObject~dependeeNotifier} dependeeNotifier
+ * @param {Function} dependeeNotifier
  */
-function unsetDependencyTracker(dependeeNotifier) {
+export function unsetDependencyTracker(dependeeNotifier) {
     if (!dependeeNotifier) {
         return;
     }
@@ -465,9 +476,9 @@ function unsetDependencyTracker(dependeeNotifier) {
  * Removes a Dependee notifier from any stored ObservableProperty list of dependees, thus
  * stopping all notifications to that depenedee.
  *
- * @param {ObservableObject~dependeeNotifier} dependeeNotifier
+ * @param {Function} dependeeNotifier
  */
-function stopDependeeNotifications(dependeeNotifier) {
+export function stopDependeeNotifications(dependeeNotifier) {
     if (dependeeNotifier) {
         emitInternalEvent(EV_STOP_DEPENDEE_NOTIFICATION, dependeeNotifier);
     }

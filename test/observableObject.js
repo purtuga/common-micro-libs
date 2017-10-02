@@ -1,6 +1,10 @@
 require                 = require("@std/esm")(module, { cjs: true, esm: "js" });
 const test              = require("tape");
-const ObservableObject  = require("../src/jsutils/ObservableObject").default;
+const {
+    default:ObservableObject,
+    setDependencyTracker,
+    unsetDependencyTracker,
+    stopDependeeNotifications }  = require("../src/jsutils/ObservableObject");
 const delay             = ms => new Promise(resolve => setTimeout(resolve, ms || 2));
 
 test("ObservableObject", t => {
@@ -330,6 +334,48 @@ test("ObservableObject", t => {
                 // FIXME: the event should only have triggered 2 times at this point. Root cause: fact that events are not batched globally?
                 st.equal(nameAndLocationChgListener.count, 3, "Change of computed dependency trigger event");
                 st.equal(obj.nameAndLocation, "Paul Tavares (NJ)", "Computed has expected value");
+            });
+    });
+
+    t.test("Track dependency externally", st => {
+        st.plan(4);
+
+        const dependeeNotifier = () => {
+            dependeeNotifier.count++;
+        };
+        dependeeNotifier.count = 0;
+
+        const obj1 = ObservableObject.create({ first: "paul" });
+        const obj2 = ObservableObject.create({ last: "tavares" });
+
+        setDependencyTracker(dependeeNotifier);
+        obj1.first;
+        obj2.last;
+        unsetDependencyTracker(dependeeNotifier);
+
+        obj1.first = "paul1";
+        delay()
+            .then(() => {
+                st.equal(dependeeNotifier.count, 1, "Dependee Notifier callback executed on obj1 change");
+                obj2.last = "tavares1";
+                return delay();
+            })
+            .then(() => {
+                st.equal(dependeeNotifier.count, 2, "Dependee Notifier callback executed on obj2 change");
+                dependeeNotifier.count = 0;
+                obj1.first = "paul";
+                obj2.last = "tavares";
+                return delay();
+            })
+            .then(() => {
+                st.equal(dependeeNotifier.count, 1, "Dependee notifier called only once per/event loop");
+                stopDependeeNotifications(dependeeNotifier);
+                dependeeNotifier.count = 0;
+                obj1.first = "paul";
+                return delay();
+            })
+            .then(() => {
+                st.equal(dependeeNotifier.count, 0, "Stop calling dependee notifier");
             });
     });
 
