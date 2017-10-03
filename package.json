@@ -40,8 +40,8 @@
         "tape": "^4.8.0",
         "text-loader": "0.0.1",
         "url-loader": "^0.5.7",
-        "webpack": "^1.12.14",
-        "webpack-dev-server": "^1.14.1",
+        "webpack": "^3.6.0",
+        "webpack-dev-server": "^2.9.1",
         "wrapper-webpack-plugin": "^0.1.7"
     }
 }
