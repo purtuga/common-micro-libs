@@ -401,10 +401,18 @@ function createComputed(observable, propName, valueGenerator) {
         let runValueGenerator = true;
         let propValue;
         const dependencyChangeNotifier = () => {
+            // Trigger the Object property setter(). This does nothing as far as the
+            // computed value does, but provides compatibility for any code that
+            // might have overwritten the setter in order ot also listen for changes
+            // outside of this lib.
+            observable[propName] = "";
+
+            // Reset the internally cached prop value and set the flag to run the
+            // generator and then notify listeners.
             propValue = null;
             runValueGenerator = true;
-            // Notify listeners to this property that value has changed
             getInstance(observable).watched[propName].notify();
+
         };
         const valueGetter = () => {
             // FIXME: should we detect circular loops?
@@ -427,22 +435,25 @@ function createComputed(observable, propName, valueGenerator) {
             runValueGenerator = false;
             return propValue;
         };
+        const valueSetter = () => {
+            /* FIXME: should this anything? */
+            return propValue;
+        };
+        const inst = makePropWatchable(observable, propName, valueGetter, valueSetter);
 
-        const inst = makePropWatchable(observable, propName, valueGetter, () => {/* FIXME: should this log error? */});
         inst.watched[propName].isComputed = true;
 
-        return Object.create({
-            destroy() {
-                if (!this.destroy.__done) {
-                    this.destroy.__done = true;
-                    stopDependeeNotifications(dependencyChangeNotifier);
-                    inst.watched[propName].destroy();
-                    delete inst.watched[propName];
-                    delete observable[propName];
-                    observable[propName] = propValue;
-                }
+        const destroy = () => {
+            if (!this.destroy.__done) {
+                this.destroy.__done = true;
+                stopDependeeNotifications(dependencyChangeNotifier);
+                inst.watched[propName].destroy();
+                delete inst.watched[propName];
+                delete observable[propName];
+                observable[propName] = propValue;
             }
-        });
+        };
+        return Object.create({ destroy });
     }
 }
 
