@@ -2,7 +2,7 @@ import objectExtend from "./objectExtend"
 import dataStore    from "./dataStore"
 
 //=========================================================
-const PRIVATE = dataStore.stash;
+const PRIVATE = dataStore.create();
 
 // Aliases
 const objectCreate = Object.create;
