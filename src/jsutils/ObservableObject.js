@@ -443,9 +443,10 @@ function createComputed(observable, propName, valueGenerator) {
 
         inst.watched[propName].isComputed = true;
 
+        let isDestroyDone = false;
         const destroy = () => {
-            if (!this.destroy.__done) {
-                this.destroy.__done = true;
+            if (!isDestroyDone) {
+                isDestroyDone = true;
                 stopDependeeNotifications(dependencyChangeNotifier);
                 inst.watched[propName].destroy();
                 delete inst.watched[propName];

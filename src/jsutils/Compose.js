@@ -1,35 +1,24 @@
 import objectExtend from "./objectExtend"
 import dataStore    from "./dataStore"
 
-/**
- * Composes new factory methods from a list of given Objects/Classes.
- *
- * @class Compose
- *
- * @example
- *
- * var Widget = Compose.create(Model, Events);
- *
- * myWidget = Widget.create();
- *
- */
+//=========================================================
+const PRIVATE = dataStore.stash;
+
+// Aliases
+const objectCreate = Object.create;
 
 
 // return all KEYs of an object, even those that are not iterable
 function objectKeys(prototype){
-    var k, keys = [];
+    let k, keys = [];
     for (k in prototype){
         keys.push(k);
     }
     return keys;
 }
 
-var objectCreate        = Object.create;
-var objectDefineProp    = Object.defineProperty;
-var instData            = dataStore.stash;
-
 // Base instance methods for Compose'd object
-var baseMethods = /** @lends Compose.prototype */{
+const baseMethods = /** @lends Compose.prototype */{
 
     /**
      * Property indicating whether instance has been destroyed
@@ -45,26 +34,19 @@ var baseMethods = /** @lends Compose.prototype */{
      * Destroys the instance, by removing its private data.
      */
     destroy:    function(){
-        var
-            hasCallbacks = this.__onDestroy,
-            onDestroyCallbacks;
+        if (PRIVATE.has(this)) {
+            PRIVATE.get(this).forEach(function(callback, i){
+                if ("function" === typeof callback) {
+                    callback();
+                }
+            });
 
-        if (hasCallbacks) {
-            onDestroyCallbacks = instData.get(hasCallbacks);
-
-            if (Array.isArray(onDestroyCallbacks)) {
-                onDestroyCallbacks.forEach(function(callback, i){
-                    if ("function" === typeof callback) {
-                        callback();
-                    }
-                    onDestroyCallbacks[i] = null;
-                });
-            }
-            instData["delete"](hasCallbacks);
+            PRIVATE.delete(this);
         }
 
-        instData["delete"](this);
-        this.isDestroyed = true;
+        if ("boolean" === typeof this.isDestroyed) {
+            this.isDestroyed = true;
+        }
     },
 
     /**
@@ -74,21 +56,7 @@ var baseMethods = /** @lends Compose.prototype */{
      * @param {Function} callback
      */
     onDestroy: function(callback){
-        if (!this.__onDestroy) {
-            objectDefineProp(this, "__onDestroy", {value: function(){}});
-        }
-
-        if ("function" === typeof callback) {
-            var
-                key                 = this.__onDestroy,
-                onDestroyCallbacks  = instData.get(key);
-
-            if (!onDestroyCallbacks) {
-                onDestroyCallbacks = [];
-                instData.set(key, onDestroyCallbacks);
-            }
-            onDestroyCallbacks.push(callback);
-        }
+        getInstanceState(this).push(callback);
     },
 
     /**
@@ -99,7 +67,8 @@ var baseMethods = /** @lends Compose.prototype */{
     getFactory: function(){} // set by .extend()
 };
 
-var staticMethods = /** @lends Compose */{
+
+const staticMethods = /** @lends Compose */{
 
     /**
      * Creates an new factory based on the prototye of the current Factory
@@ -107,13 +76,12 @@ var staticMethods = /** @lends Compose */{
      *
      * @return {Compose}
      */
-    extend: function(){
-        var args    = Array.prototype.slice.call(arguments);
-        var Factory = function(){};
+    extend: function(...args){
+        let Factory = function(){};
 
         Factory.prototype = args.reduce(function(newProto, obj){
             if (obj) {
-                var thisObjProto = (obj.prototype || obj);
+                const thisObjProto = (obj.prototype || obj);
                 objectKeys(thisObjProto).forEach(function(objKey){
                     newProto[objKey] = thisObjProto[objKey];
                 });
@@ -216,8 +184,27 @@ var staticMethods = /** @lends Compose */{
     }
 };
 
-var Compose = function(){};
+function getInstanceState(inst) {
+    if (!PRIVATE.has(inst)) {
+        PRIVATE.set(inst, []);
+    }
 
+    return PRIVATE.get(inst);
+}
+
+/**
+ * Composes new factory methods from a list of given Objects/Classes.
+ *
+ * @class Compose
+ *
+ * @example
+ *
+ * var Widget = Compose.create(Model, Events);
+ *
+ * myWidget = Widget.create();
+ *
+ */
+var Compose = function(){};
 Compose.prototype = objectCreate(baseMethods);
 objectExtend(Compose, staticMethods);
 
