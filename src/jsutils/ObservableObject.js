@@ -16,32 +16,17 @@ const EV_STOP_DEPENDEE_NOTIFICATION = "1";
 const emitInternalEvent     = INTERNAL_EVENTS.emit.bind(INTERNAL_EVENTS);
 const onInternalEvent       = INTERNAL_EVENTS.on.bind(INTERNAL_EVENTS);
 const bindCallTo            = Function.call.bind.bind(Function.call);
+const objectCreate          = OBJECT.create;
 const objectDefineProperty  = OBJECT.defineProperty;
 const objectHasOwnProperty  = bindCallTo(OBJECT.prototype.hasOwnProperty);
 const arrayIndexOf          = bindCallTo(ARRAY_PROTOTYPE.indexOf);
 const arrayForEach          = bindCallTo(ARRAY_PROTOTYPE.forEach);
 const arraySplice           = bindCallTo(ARRAY_PROTOTYPE.splice);
 const objectKeys            = Object.keys;
+const noopEventListener     = objectCreate({ off() {} });
 
 let dependeeList = [];
 
-const queueDependeeNotifier = (() => {
-    const dependeeNotifiers = [];
-    const execNotifiers     = () => arrayForEach(arraySplice(dependeeNotifiers, 0), notifierCb => notifierCb());
-
-    return notifierCb => {
-        if (!notifierCb || arrayIndexOf(dependeeNotifiers, notifierCb) !== -1) {
-            return;
-        }
-
-        const callNextTick = !dependeeNotifiers.length;
-        dependeeNotifiers.push(notifierCb);
-
-        if (callNextTick) {
-            nextTick(execNotifiers);
-        }
-    };
-})();
 
 /**
  * Adds the ability to observe `Object` property values for changes.
@@ -95,7 +80,8 @@ const ObservableObject = Compose.extend(/** @lends ObservableObject.prototype */
         const opt = objectExtend({}, this.getFactory().defaults, options);
 
         if (opt.watchAll) {
-            arrayForEach(objectKeys(this), propName => makePropWatchable(this, propName));
+            makeObservable(this);
+            // arrayForEach(objectKeys(this), propName => makePropWatchable(this, propName));
         }
     },
 
@@ -112,9 +98,7 @@ const ObservableObject = Compose.extend(/** @lends ObservableObject.prototype */
      * @return {EventListener}
      */
     on: function(prop, callback){
-        if (objectHasOwnProperty(this, prop)) {
-            return makePropWatchable(this, prop).on(prop, callback);
-        }
+        return watchObservableProp(this, prop, callback);
     },
 
     /**
@@ -127,7 +111,7 @@ const ObservableObject = Compose.extend(/** @lends ObservableObject.prototype */
      *  The callback that should be removed.
      */
     off: function(prop, callback){
-        return getInstance(this).off(prop, callback);
+        unwatchObservableProp(this, prop, callback);
     },
 
     /**
@@ -140,9 +124,7 @@ const ObservableObject = Compose.extend(/** @lends ObservableObject.prototype */
      *  The callback that should be removed.
      */
     once: function(prop, callback){
-        if (objectHasOwnProperty(this, prop)) {
-            return makePropWatchable(this, prop).once(prop, callback);
-        }
+        return watchObservablePropOnce(this, prop, callback);
     },
 
     /**
@@ -179,7 +161,8 @@ const ObservableObject = Compose.extend(/** @lends ObservableObject.prototype */
      * @returns {*}
      */
     setProp(propName, value) {
-        return setProp(this, propName, value);
+        makePropWatchable(this, propName);
+        return this[propName] = value;
     }
 });
 
@@ -216,6 +199,25 @@ function getInstance(observableObj){
     }
     return PRIVATE.get(observableObj);
 }
+
+
+const queueDependeeNotifier = (() => {
+    const dependeeNotifiers = [];
+    const execNotifiers     = () => arrayForEach(arraySplice(dependeeNotifiers, 0), notifierCb => notifierCb());
+
+    return notifierCb => {
+        if (!notifierCb || arrayIndexOf(dependeeNotifiers, notifierCb) !== -1) {
+            return;
+        }
+
+        const callNextTick = !dependeeNotifiers.length;
+        dependeeNotifiers.push(notifierCb);
+
+        if (callNextTick) {
+            nextTick(execNotifiers);
+        }
+    };
+})();
 
 /**
  * A property setup
@@ -374,7 +376,7 @@ function makePropWatchable(observable, propName, valueGetter, valueSetter){
                 // Dirty checking...
                 // Only trigger if values are different. Also, only add a trigger
                 // if one is not already queued.
-                if (!propSetup.queued && newValue !== oldValue) {
+                if (newValue !== oldValue) {
                     propSetup.notify();
                 }
             }
@@ -396,7 +398,7 @@ function makePropWatchable(observable, propName, valueGetter, valueSetter){
  * @param {String} propName
  * @param {Function} valueGenerator
  */
-function createComputed(observable, propName, valueGenerator) {
+export function createComputed(observable, propName, valueGenerator) {
     if (observable && propName && valueGenerator) {
         let runValueGenerator = true;
         let propValue;
@@ -496,20 +498,6 @@ export function stopDependeeNotifications(dependeeNotifier) {
     }
 }
 
-/**
- * Sets a property on the Observable Object with the given value. Property will be
- * create or updated and be made "watchable"
- *
- * @param {Object} observable
- * @param {String} propName
- * @param {*} [value]
- *
- * @return {*}
- */
-function setProp(observable, propName, value) {
-    makePropWatchable(observable, propName);
-    return observable[propName] = value;
-}
 
 /**
  * Assign the properties of one (or more) objects to the observable and
@@ -520,7 +508,7 @@ function setProp(observable, propName, value) {
  *
  * @return {Object} observable
  */
-function observableAssign(observable, ...objs) {
+export function observableAssign(observable, ...objs) {
     if (objs.length) {
         arrayForEach(objs, obj => {
             arrayForEach(objectKeys(obj), key => {
@@ -532,25 +520,95 @@ function observableAssign(observable, ...objs) {
     return observable;
 }
 
+/**
+ * Makes an Object observable or a given property of the object observable.
+ *
+ * @param {Object} observable
+ *  The object that should be made observable.
+ *
+ * @param {String} [propName]
+ *  if left unset, then all existing `own properties` of the object will
+ *  be made observable.
+ *
+ * @param {Boolean} [deep=false]
+ *  If set to `true` then the object, or the value the given `prop` (if defined)
+ *  will be "walked" and any object found made an observable as well.
+ */
+export function makeObservable(observable, propName, deep) {
+    if (observable) {
+        if (propName) {
+            makePropWatchable(observable, propName);
+        }
+        else {
+            arrayForEach(objectKeys(observable), prop => makePropWatchable(observable, prop));
+        }
 
+        if (deep) {
+            // FIXME: do deep processing
+        }
+    }
+}
 
-ObservableObject.createComputed = createComputed;
+/**
+ *
+ * @param {Object} observable
+ * @param {String} propName
+ * @param {Function} notifier
+ * @returns {EventEmitter#EventListener}
+ */
+export function watchObservableProp(observable, propName, notifier) {
+    if (objectHasOwnProperty(observable, propName)) {
+        return makePropWatchable(observable, propName).on(propName, notifier);
+    }
+    else {
+        return noopEventListener;
+    }
+}
+
+/**
+ * Watch for changes on a given object property.
+ *
+ * @param {Object} observable
+ * @param {String} propName
+ * @param {Function} notifier
+ * @returns {EventEmitter#EventListener}
+ */
+export function watchObservablePropOnce(observable, propName, notifier) {
+    if (objectHasOwnProperty(observable, propName)) {
+        return makePropWatchable(observable, propName).once(propName, notifier);
+    }
+    else {
+        return noopEventListener;
+    }
+}
+
+/**
+ * Stop watching an object property.
+ *
+ * @param {Object} observable
+ * @param {String} propName
+ * @param {Function} notifier
+ */
+export function unwatchObservableProp(observable, propName, notifier) {
+    return getInstance(observable).off(propName, notifier);
+}
+
 
 /**
  * Adds ObservableObject capabilities to an object.
  *
  * @method ObservableObject.mixin
  *
- * @param {Object} obj
+ * @param {Object} observable
  *
  * @return {Object}
  *  Same object that was given on input will be returned
  */
-ObservableObject.mixin = function(obj){
-    if (obj) {
+export function observableMixin(observable) {
+    if (observable) {
         arrayForEach(objectKeys(ObservableObject.prototype), function(method){
-            if (!(method in obj) || obj[method] !== ObservableObject.prototype[method]) {
-                objectDefineProperty(obj, method, {
+            if (!(method in observable) || observable[method] !== ObservableObject.prototype[method]) {
+                objectDefineProperty(observable, method, {
                     value:          ObservableObject.prototype[method],
                     enumerable:     false,
                     configurable:   true
@@ -558,8 +616,12 @@ ObservableObject.mixin = function(obj){
             }
         });
     }
-    return obj;
-};
+    return observable;
+}
+
+
+ObservableObject.createComputed = createComputed;
+ObservableObject.mixin = observableMixin;
 
 ObservableObject.defaults = {
     watchAll: true

@@ -1,5 +1,5 @@
-require                 = require("@std/esm")(module, { cjs: true, esm: "js" });
-const test              = require("tape");
+require     = require("@std/esm")(module, { cjs: true, esm: "js" });
+const test  = require("tape");
 const {
     default:ObservableObject,
     setDependencyTracker,
@@ -23,7 +23,7 @@ test("ObservableObject", t => {
         st.equal(typeof model.once, "function", "has .once() method");
         st.equal(typeof model.destroy, "function", "has .destroy() method");
         st.equal(typeof model.assign, "function", "has .assign() method");
-        st.equal(typeof model.setProp, "function", "has .setProp() method");
+        st.equal(typeof model.setProp, "function", "has .setObservableProp() method");
 
         model.destroy();
         st.equal(model.isDestroyed, true, ".isDestroy is true");
@@ -70,13 +70,13 @@ test("ObservableObject", t => {
             });
     });
 
-    t.test(".setProp() method", st => {
+    t.test(".setObservableProp() method", st => {
         st.plan(3);
 
         const obj = ObservableObject.create();
         let setReturnValue = obj.setProp("name", "paul");
 
-        st.equal(setReturnValue, "paul", "setProp() return value that was given on input");
+        st.equal(setReturnValue, "paul", "setObservableProp() return value that was given on input");
         obj.once("name", () => {
             st.pass("prop was created as watchable");
             st.equal(obj.name, "john", "new value was set");
