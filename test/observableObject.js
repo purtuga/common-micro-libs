@@ -14,7 +14,7 @@ test("ObservableObject", t => {
     t.equal(typeof ObservableObject.createComputed, "function", "has .createComputed() method");
 
     t.test("Instance Methods", st => {
-        const model = ObservableObject.create({name: "paul"});
+        let model = ObservableObject.create({name: "paul"});
 
         st.equal(model.name, "paul", "is instantiated with provided input");
 
@@ -189,6 +189,33 @@ test("ObservableObject", t => {
                 st.equal(generateFullName.count, 3, "Computed value generator is NOT called after computed.destroy()");
             })
             .catch(e => console.log(e));
+    });
+
+    t.test("computed properties from deep structures", st => {
+
+        const model = ObservableObject.create({
+            a: {
+                b: {
+                    c: {
+                        d: "test"
+                    }
+                }
+            }
+        }, { deep: true });
+
+        ObservableObject.createComputed(model, "deep", () => `D: ${ model.a.b.c.d }`);
+        st.equal(model.deep, "D: test", "Computed generated");
+
+        model.a.b.c.d = "TEST";
+        st.equal(model.deep, "D: TEST", "Computed updated");
+
+        model.a.b = { c: { d: "TeSt"} };
+        st.equal(model.deep, "D: TeSt", "Computed updated on sub-path change");
+
+        model.a.b.c.d = "TEST";
+        st.equal(model.deep, "D: TEST", "Computed updated after sub-path change");
+
+        st.end();
     });
 
     t.test("Computed properties from different observable objects", st => {

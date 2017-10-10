@@ -8,6 +8,7 @@ import nextTick         from "./nextTick"
 const PRIVATE               = dataStore.create();
 const ARRAY_PROTOTYPE       = Array.prototype;
 const OBJECT                = Object;
+const OBJECT_PROTOTYPE      = OBJECT.prototype;
 const INTERNAL_EVENTS       = EventEmitter.create();
 const IS_COMPUTED_NOTIFIER  = "__od_cn__";
 
@@ -19,11 +20,12 @@ const onInternalEvent       = INTERNAL_EVENTS.on.bind(INTERNAL_EVENTS);
 const bindCallTo            = Function.call.bind.bind(Function.call);
 const objectCreate          = OBJECT.create;
 const objectDefineProperty  = OBJECT.defineProperty;
-const objectHasOwnProperty  = bindCallTo(OBJECT.prototype.hasOwnProperty);
+const objectHasOwnProperty  = bindCallTo(OBJECT_PROTOTYPE.hasOwnProperty);
 const arrayIndexOf          = bindCallTo(ARRAY_PROTOTYPE.indexOf);
 const arrayForEach          = bindCallTo(ARRAY_PROTOTYPE.forEach);
 const arraySplice           = bindCallTo(ARRAY_PROTOTYPE.splice);
 const objectKeys            = Object.keys;
+const isPureObject          = o => o && OBJECT_PROTOTYPE.toString.call(o) === "[object Object]";
 const noopEventListener     = objectCreate({ off() {} });
 
 let dependeeList = [];
@@ -73,16 +75,17 @@ let dependeeList = [];
  */
 const ObservableObject = Compose.extend(/** @lends ObservableObject.prototype */{
     init(model, options) {
-        if (model) {
-            // FIXME: need to create prop with original getter/setters - or no?
-            objectExtend(this, model);
-        }
-
         const opt = objectExtend({}, this.getFactory().defaults, options);
 
-        if (opt.watchAll) {
-            makeObservable(this);
-            // arrayForEach(objectKeys(this), propName => makePropWatchable(this, propName));
+        if (model) {
+            // FIXME: need to create prop that uses original getter/setters from `model` - or no?
+            objectExtend(this, model);
+
+            if (opt.watchAll) {
+                makeObservable(this, null, opt.deep);
+            }
+
+            getInstance(this).opt = opt;
         }
     },
 
@@ -179,6 +182,8 @@ function getInstance(observableObj){
     if (!PRIVATE.has(observableObj)) {
         const instData = EventEmitter.create();
         const watched = instData.watched = {};
+
+        instData.opt = objectExtend({}, ObservableObject.defaults);
 
         PRIVATE.set(observableObj, instData);
 
@@ -374,7 +379,7 @@ function makePropWatchable(observable, propName, valueGetter, valueSetter){
                 let oldValue = valueGetter ? valueGetter() : propSetup.newVal;
 
                 if (valueSetter) {
-                    valueSetter.call(observable, newValue);
+                    newValue = valueSetter.call(observable, newValue);
 
                 } else {
                     propSetup.oldVal = oldValue;
@@ -385,6 +390,10 @@ function makePropWatchable(observable, propName, valueGetter, valueSetter){
                 // Only trigger if values are different. Also, only add a trigger
                 // if one is not already queued.
                 if (newValue !== oldValue) {
+                    if (inst.opt.deep && newValue && isPureObject(newValue)) {
+                        makeObservable(newValue, null, true);
+                    }
+
                     propSetup.notify();
                 }
             }
@@ -554,7 +563,11 @@ export function makeObservable(observable, propName, deep) {
         }
 
         if (deep) {
-            // FIXME: do deep processing
+            arrayForEach(objectKeys(observable), key => {
+                if (observable[key] && isPureObject(observable[key])) {
+                    makeObservable(observable[key], null, deep);
+                }
+            });
         }
     }
 }
@@ -634,7 +647,8 @@ ObservableObject.createComputed = createComputed;
 ObservableObject.mixin = observableMixin;
 
 ObservableObject.defaults = {
-    watchAll: true
+    watchAll:   true,
+    deep:       true
 };
 
 export default ObservableObject;
