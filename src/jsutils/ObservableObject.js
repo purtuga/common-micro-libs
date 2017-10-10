@@ -9,6 +9,7 @@ const PRIVATE               = dataStore.create();
 const ARRAY_PROTOTYPE       = Array.prototype;
 const OBJECT                = Object;
 const INTERNAL_EVENTS       = EventEmitter.create();
+const IS_COMPUTED_NOTIFIER  = "__od_cn__";
 
 const EV_STOP_DEPENDEE_NOTIFICATION = "1";
 
@@ -207,6 +208,13 @@ const queueDependeeNotifier = (() => {
 
     return notifierCb => {
         if (!notifierCb || arrayIndexOf(dependeeNotifiers, notifierCb) !== -1) {
+            return;
+        }
+
+        // Computed property notifiers are lightweight, so execute
+        // these now and don't queue them.
+        if (notifierCb[IS_COMPUTED_NOTIFIER]) {
+            notifierCb();
             return;
         }
 
@@ -441,8 +449,10 @@ export function createComputed(observable, propName, valueGenerator) {
             /* FIXME: should this anything? */
             return propValue;
         };
-        const inst = makePropWatchable(observable, propName, valueGetter, valueSetter);
 
+        dependencyChangeNotifier[IS_COMPUTED_NOTIFIER] = true;
+
+        const inst = makePropWatchable(observable, propName, valueGetter, valueSetter);
         inst.watched[propName].isComputed = true;
 
         let isDestroyDone = false;

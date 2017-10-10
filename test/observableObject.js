@@ -163,9 +163,10 @@ test("ObservableObject", t => {
         st.equal(generateFullName.count, 1, "value generated called once");
 
         obj.firstName = "Paul1";
+        st.equal(obj.fullName, "Paul1 Tavares", "change to dependency prop updates Computed value imediately (no delay)");
+
         delay()
             .then(() => {
-                st.equal(obj.fullName, "Paul1 Tavares", "change to dependency prop updates Computed value");
                 st.equal(generateFullName.count, 2, "Value generator called twice");
 
                 obj.firstName = "john";
@@ -331,8 +332,7 @@ test("ObservableObject", t => {
                 return delay();
             })
             .then(() => {
-                // FIXME: the event should only have triggered 2 times at this point. Root cause: fact that events are not batched globally?
-                st.equal(nameAndLocationChgListener.count, 3, "Change of computed dependency trigger event");
+                st.equal(nameAndLocationChgListener.count, 2, "Change of computed dependency trigger event");
                 st.equal(obj.nameAndLocation, "Paul Tavares (NJ)", "Computed has expected value");
             });
     });

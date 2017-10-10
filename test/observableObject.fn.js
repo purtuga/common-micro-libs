@@ -55,9 +55,6 @@ test("makeObservable()", t => {
             t.equal(obj.fullName, "paul tavares", "computed created");
 
             obj.lastName = "TAVARES";
-            return delay();
-        })
-        .then(() => {
             t.equal(obj.fullName, "paul TAVARES", "Updated computed provided");
         })
         .catch(console.error.bind(console));
