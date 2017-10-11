@@ -139,10 +139,7 @@ const ObservableObject = Compose.extend(/** @lends ObservableObject.prototype */
      * @param {String} prop
      */
     emit: function(prop){
-        var watched = getInstance(this).watched;
-        if (watched[prop]) {
-            watched[prop].notify(true);
-        }
+        return notifyObservablePropWatchers(this, prop);
     },
 
     /**
@@ -616,6 +613,19 @@ export function unwatchObservableProp(observable, propName, notifier) {
     return getInstance(observable).off(propName, notifier);
 }
 
+
+/**
+ * Notifies watchers of a given Observable property
+ *
+ * @param {Object} observable
+ * @param {String} propName
+ */
+export function notifyObservablePropWatchers(observable, propName) {
+    let watched = getInstance(observable).watched;
+    if (watched[propName]) {
+        watched[propName].notify(true);
+    }
+}
 
 /**
  * Adds ObservableObject capabilities to an object.
