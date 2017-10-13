@@ -44,6 +44,11 @@ let dependeeList = [];
  * @class ObservableObject
  * @extends Compose
  *
+ * @param {Object} [model]
+ * @param {Object} [options]
+ * @param {Boolean} [options.watchAll]
+ * @param {Boolean} [options.deep]
+ *
  * @example
  *
  * // Used as a mixin
@@ -577,8 +582,9 @@ export function makeObservable(observable, propName, deep) {
  * @returns {EventEmitter#EventListener}
  */
 export function watchObservableProp(observable, propName, notifier) {
-    if (objectHasOwnProperty(observable, propName)) {
-        return makePropWatchable(observable, propName).on(propName, notifier);
+    if (propName === observable || objectHasOwnProperty(observable, propName)) {
+        const inst = makePropWatchable(observable, propName);
+        return inst.on(propName === observable ? inst : propName, notifier);
     }
     else {
         return noopEventListener;
@@ -594,8 +600,9 @@ export function watchObservableProp(observable, propName, notifier) {
  * @returns {EventEmitter#EventListener}
  */
 export function watchObservablePropOnce(observable, propName, notifier) {
-    if (objectHasOwnProperty(observable, propName)) {
-        return makePropWatchable(observable, propName).once(propName, notifier);
+    if (propName === observable || objectHasOwnProperty(observable, propName)) {
+        const inst = makePropWatchable(observable, propName);
+        return inst.once(propName === observable ? inst : propName, notifier);
     }
     else {
         return noopEventListener;

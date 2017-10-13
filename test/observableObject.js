@@ -85,7 +85,7 @@ test("ObservableObject", t => {
     });
 
     t.test("Emits Events", st => {
-        st.plan(3);
+        st.plan(5);
 
         const model = ObservableObject.create({name: "paul"});
 
@@ -96,15 +96,41 @@ test("ObservableObject", t => {
         st.equal(model.name, "paul", "has original value after calling .on()");
         model.name = "paul 1";
 
-        const changeCallback = () => changeCallback.count++;
-        changeCallback.count = 0;
 
-        model.on("name", changeCallback);
+        const changeCallback    = () => {changeCallback.count = changeCallback.count || 0;  changeCallback.count++};
+        const allListener       = () => {allListener.count = allListener.count || 0;  allListener.count++};
+        let evListener;
+
+        evListener = model.on("name", changeCallback);
         [1, 2, 3].forEach(n => model.name = `paul-${n}`);
 
-        setTimeout(() => {
-            st.equal(changeCallback.count, 1, "Callbacks are executed only once per event loop");
-        }, 40);
+        delay().then(() => {
+                st.equal(changeCallback.count, 1, "Callbacks are executed only once per event loop");
+                evListener.off();
+                evListener = null;
+
+                evListener = model.on(model, allListener);
+                model.name = "paul";
+                return delay();
+            })
+            .then(() => {
+                st.equal(allListener.count, 1, "Able to listen to all events");
+                evListener.off();
+                allListener.count = 0;
+
+                evListener = model.once(model, allListener);
+                model.name = "paul1";
+                return delay();
+            })
+            .then(() => {
+                model.name = "paul2";
+                return delay();
+            })
+            .then(() => {
+                st.equal(allListener.count, 1, "Able to listen to all events once()");
+                evListener.off();
+            })
+            .catch(console.error.bind(console));
     });
 
     t.test("Supports existing getters and setters", st => {
