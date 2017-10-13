@@ -46,6 +46,8 @@ test("Collection", t => {
         data.pop();
         st.equal(data.length, 2, "has length 2 when item is pop'd");
 
+        st.equal(data.length, data.size(), "size prop equals length prop");
+
         st.end();
     });
 

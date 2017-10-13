@@ -67,6 +67,7 @@ export const DomElementResizeMonitor = EventEmitter.extend(/** @lends DomElement
         PRIVATE.set(this, inst);
 
         // Setup the Div container for the monitor
+        setAttribute(shadowEle, "class", "DomElementResizeMonitor");
         setAttribute(shadowEle, "tabindex", "-1");
         setAttribute(shadowEle, "style", `${STYLE_BASE} border: none; background-color: transparent; opacity: 0;`);
 

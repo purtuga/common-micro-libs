@@ -2,13 +2,34 @@ import Compose          from "./Compose"
 import objectExtend     from "./objectExtend"
 import dataStore        from "./dataStore"
 import EventEmitter     from "./EventEmitter"
+import nextTick         from "./nextTick"
 
 //=======================================================
-const PRIVATE                 = dataStore.create();
-const GLOBAL_NOTIFY_DELAY     = 10;
+const PRIVATE               = dataStore.create();
+const ARRAY_PROTOTYPE       = Array.prototype;
+const OBJECT                = Object;
+const OBJECT_PROTOTYPE      = OBJECT.prototype;
+const INTERNAL_EVENTS       = EventEmitter.create();
+const IS_COMPUTED_NOTIFIER  = "__od_cn__";
 
-const objectDefineProperty    = Object.defineProperty;
-const objectHasOwnProperty    = Object.prototype.hasOwnProperty;
+const EV_STOP_DEPENDEE_NOTIFICATION = "1";
+
+// aliases
+const emitInternalEvent     = INTERNAL_EVENTS.emit.bind(INTERNAL_EVENTS);
+const onInternalEvent       = INTERNAL_EVENTS.on.bind(INTERNAL_EVENTS);
+const bindCallTo            = Function.call.bind.bind(Function.call);
+const objectCreate          = OBJECT.create;
+const objectDefineProperty  = OBJECT.defineProperty;
+const objectHasOwnProperty  = bindCallTo(OBJECT_PROTOTYPE.hasOwnProperty);
+const arrayIndexOf          = bindCallTo(ARRAY_PROTOTYPE.indexOf);
+const arrayForEach          = bindCallTo(ARRAY_PROTOTYPE.forEach);
+const arraySplice           = bindCallTo(ARRAY_PROTOTYPE.splice);
+const objectKeys            = Object.keys;
+const isPureObject          = o => o && OBJECT_PROTOTYPE.toString.call(o) === "[object Object]";
+const noopEventListener     = objectCreate({ off() {} });
+
+let dependeeList = [];
+
 
 /**
  * Adds the ability to observe `Object` property values for changes.
@@ -22,6 +43,11 @@ const objectHasOwnProperty    = Object.prototype.hasOwnProperty;
  *
  * @class ObservableObject
  * @extends Compose
+ *
+ * @param {Object} [model]
+ * @param {Object} [options]
+ * @param {Boolean} [options.watchAll]
+ * @param {Boolean} [options.deep]
  *
  * @example
  *
@@ -52,10 +78,19 @@ const objectHasOwnProperty    = Object.prototype.hasOwnProperty;
  * });
  *
  */
-let ObservableObject = /** @lends ObservableObject.prototype */{
-    init(model) {
+const ObservableObject = Compose.extend(/** @lends ObservableObject.prototype */{
+    init(model, options) {
+        const opt = objectExtend({}, this.getFactory().defaults, options);
+
         if (model) {
+            // FIXME: need to create prop that uses original getter/setters from `model` - or no?
             objectExtend(this, model);
+
+            if (opt.watchAll) {
+                makeObservable(this, null, opt.deep);
+            }
+
+            getInstance(this).opt = opt;
         }
     },
 
@@ -72,10 +107,7 @@ let ObservableObject = /** @lends ObservableObject.prototype */{
      * @return {EventListener}
      */
     on: function(prop, callback){
-        if (objectHasOwnProperty.call(this, prop)) {
-            watchProp.call(this, prop);
-            return getInstance.call(this).on(prop, callback);
-        }
+        return watchObservableProp(this, prop, callback);
     },
 
     /**
@@ -88,10 +120,7 @@ let ObservableObject = /** @lends ObservableObject.prototype */{
      *  The callback that should be removed.
      */
     off: function(prop, callback){
-        var inst = getInstance.call(this);
-        if (inst[prop]) {
-            return inst.off(prop, callback);
-        }
+        unwatchObservableProp(this, prop, callback);
     },
 
     /**
@@ -104,10 +133,7 @@ let ObservableObject = /** @lends ObservableObject.prototype */{
      *  The callback that should be removed.
      */
     once: function(prop, callback){
-        if (objectHasOwnProperty.call(this, prop)) {
-            watchProp.call(this, prop);
-            return getInstance.call(this).once(prop, callback);
-        }
+        return watchObservablePropOnce(this, prop, callback);
     },
 
     /**
@@ -118,154 +144,511 @@ let ObservableObject = /** @lends ObservableObject.prototype */{
      * @param {String} prop
      */
     emit: function(prop){
-        var watched = getInstance.call(this).watched;
-        if (watched[prop]) {
-            watched[prop].notify();
-        }
+        return notifyObservablePropWatchers(this, prop);
+    },
+
+    /**
+     * Copies the properties of one or more objects into the current observable
+     * and makes those properties "watchable".
+     *
+     * @param {...Object} args
+     *
+     * @returns {Object}
+     */
+    assign(...args) {
+        return observableAssign(this, ...args);
+    },
+
+    /**
+     * Sets a property on the observable object and automatically makes it watchable
+     *
+     * @param {String} propName
+     * @param {*} [value]
+     * @returns {*}
+     */
+    setProp(propName, value) {
+        makePropWatchable(this, propName);
+        return this[propName] = value;
     }
-};
+});
 
 /**
  * Returns the private Instance data for this object
  *
  * @private
- * @this ObservableObject
+ * @param {Object} observableObj
  *
  * @return {EventEmitter}
  */
-function getInstance(){
-    if (!PRIVATE.has(this)) {
-        var instData = EventEmitter.create();
-        instData.watched = {};
+function getInstance(observableObj){
+    if (!PRIVATE.has(observableObj)) {
+        const instData = EventEmitter.create();
+        const watched = instData.watched = {};
 
-        PRIVATE.set(this, instData);
+        instData.opt = objectExtend({}, ObservableObject.defaults);
 
-        if (this.onDestroy) {
-            this.onDestroy(function(){
+        PRIVATE.set(observableObj, instData);
+
+        if (observableObj.onDestroy) {
+            observableObj.onDestroy(function(){
+                objectKeys(watched).forEach(propName => {
+                    watched[propName].destroy();
+
+                    // FIXME remove property getter/setter on the object (if still there)
+
+                    delete watched[propName];
+                });
+
                 delete instData.watched;
-                PRIVATE.delete(this);
+                PRIVATE.delete(observableObj);
                 instData.destroy();
-            }.bind(this));
+            }.bind(observableObj));
         }
     }
-    return PRIVATE.get(this);
+    return PRIVATE.get(observableObj);
 }
+
+
+const queueDependeeNotifier = (() => {
+    const dependeeNotifiers = [];
+    const execNotifiers     = () => arrayForEach(arraySplice(dependeeNotifiers, 0), notifierCb => notifierCb());
+
+    return notifierCb => {
+        if (!notifierCb || arrayIndexOf(dependeeNotifiers, notifierCb) !== -1) {
+            return;
+        }
+
+        // Computed property notifiers are lightweight, so execute
+        // these now and don't queue them.
+        if (notifierCb[IS_COMPUTED_NOTIFIER]) {
+            notifierCb();
+            return;
+        }
+
+        const callNextTick = !dependeeNotifiers.length;
+        dependeeNotifiers.push(notifierCb);
+
+        if (callNextTick) {
+            nextTick(execNotifiers);
+        }
+    };
+})();
+
+/**
+ * A property setup
+ *
+ * @class Observable~PropertySetup
+ * @extends Compose
+ */
+const PropertySetup = Compose.extend({
+    init(observable, propName) {
+        const dependees = this.dependees = [];
+        this.propName = propName;
+        this._obj = observable;
+
+        const removeDependeeEvListener = onInternalEvent(EV_STOP_DEPENDEE_NOTIFICATION, cb => {
+            const cbIndex = arrayIndexOf(dependees, cb);
+            if (cbIndex !== -1) {
+                arraySplice(dependees, cbIndex, 1);
+            }
+        });
+
+        this.onDestroy(() => {
+            arraySplice(this.dependees, 0);
+            removeDependeeEvListener.off();
+            this._obj = null;
+        })
+    },
+
+    propName: "",
+
+    /** @type Array */
+    dependees: null,
+
+    oldVal: null,
+
+    newVal: null,
+
+    queued: false,
+
+    isComputed: false,
+
+    /**
+     * Notifies everyone that is listening for events on this property
+     *
+     * @param [noDelay=false]
+     */
+    notify(noDelay){
+        const propSetup = this;
+
+        // Queue up calling all dependee notifiers
+        arrayForEach(this.dependees, cb => queueDependeeNotifier(cb));
+
+        // If emitting of events for this property was already queued, exit
+        if (propSetup.queued) {
+            return;
+        }
+
+        propSetup.queued = true;
+
+        const notifyListeners = () => {
+            const {propName, _obj:observable} = this;
+            propSetup.queued = false;
+            getInstance(observable).emit(propName, propSetup.newVal, propSetup.oldVal);
+            propSetup.oldVal = null;
+        };
+
+        if (noDelay) {
+            notifyListeners();
+            return;
+        }
+
+        nextTick(() => notifyListeners());
+    }
+});
 
 /**
  * Checks to see if a given property on this object already has a watcher
  * and if not, it sets one up for it.
  *
  * @private
- * @this ObservableObject
+ * @param {ObservableObject} observable
+ * @param {String} propName
+ * @param {Function} [valueGetter]
+ * @param {Function} [valueSetter]
  *
- * @param {String} prop
+ * @return {EventEmitter}
  */
-function watchProp(prop){
-    let observable      = this;
-    let inst            = getInstance.call(observable);
+function makePropWatchable(observable, propName, valueGetter, valueSetter){
+    let inst            = getInstance(observable);
     let watched         = inst.watched;
-    let eventRunning    = false;
-    let currentValue, propDescriptor, priorGetter, priorSetter;
+    let currentValue, propDescriptor;
 
-    if (!watched[prop]){
-        propDescriptor = Object.getOwnPropertyDescriptor(observable, prop);
+    if (watched[propName]){
+        return inst;
+    }
 
-        if (propDescriptor) {
-            if (propDescriptor.configurable === false) {
-                return;
-            }
-            priorGetter = propDescriptor.get;
-            priorSetter = propDescriptor.set;
+    propDescriptor = Object.getOwnPropertyDescriptor(observable, propName);
+
+    if (propDescriptor) {
+        if (propDescriptor.configurable === false) {
+            // TODO: should we throw()?
+            return;
         }
 
-        currentValue = this[prop];
+        valueGetter = valueGetter || propDescriptor.get;
+        valueSetter = valueSetter || propDescriptor.set;
 
-        // if we're able to remove the current property (ex. Constants would fail),
-        // then change this attribute to be watched
-        if (delete this[prop]) {
-            watched[prop] = {
-                oldVal: currentValue,
-                newVal: currentValue,
-                queued: null,
-                notify: function(delay){
-                    // Trigger event, but only if this update was not a
-                    // result of an earlier event trigger to this same prop.
-                    if (eventRunning) {
-                        return;
-                    }
+        if (!valueGetter) {
+            currentValue = propDescriptor.value;
+        }
+    }
 
-                    eventRunning = true;
+    // if we're able to remove the current property (ex. Constants would fail),
+    // then change this attribute to be watched
+    if (delete observable[propName]) {
+        const propSetup = watched[propName] = PropertySetup.create(observable, propName);
+        const dependees = propSetup.dependees;
 
-                    var callListeners = function(){
-                        inst.emit(prop, watched[prop].newVal, watched[prop].oldVal);
-                        watched[prop].queued = null;
-                        eventRunning = false;
-                    };
+        propSetup.oldVal = propSetup.newVal = currentValue;
 
-                    if (delay === undefined) {
-                        callListeners();
-                        return;
-                    }
+        objectDefineProperty(observable, propName, {
+            enumerable:     true,
+            configurable:   true,
 
-                    watched[prop].queued = setTimeout(callListeners, GLOBAL_NOTIFY_DELAY);
+            // Getter will either delegate to the prior getter(),
+            // or return the value that was originally assigned to the property
+            get: function(){
+                // If there is a dependee listening for changes right now, then
+                // store it for future notification
+                if (dependeeList && dependeeList.length) {
+                    arrayForEach(dependeeList, dependeeCallback => {
+                        if (arrayIndexOf(dependees, dependeeCallback) === -1) {
+                            dependees.push(dependeeCallback);
+                        }
+                    });
                 }
-            };
 
-            currentValue = undefined;
+                return valueGetter ? valueGetter() : propSetup.newVal;
+            },
 
-            objectDefineProperty(this, prop, {
-                enumerable:     true,
-                configurable:   true,
+            // Setter is how we detect changes to the value.
+            set: function(newValue){
+                if (propSetup.isComputed) {
+                    return; // TODO: should throw? or console.warn  ?
+                }
 
-                get: function(){
-                    return priorGetter ? priorGetter() : watched[prop].newVal;
-                },
+                let oldValue = valueGetter ? valueGetter() : propSetup.newVal;
 
-                set: function(newValue){
-                    let oldValue = priorGetter ? priorGetter() : watched[prop].newVal;
+                if (valueSetter) {
+                    newValue = valueSetter.call(observable, newValue);
 
-                    if (priorSetter) {
-                        priorSetter.call(observable, newValue);
+                } else {
+                    propSetup.oldVal = oldValue;
+                    propSetup.newVal = newValue;
+                }
 
-                    } else {
-                        watched[prop].oldVal = oldValue;
-                        watched[prop].newVal = newValue;
+                // Dirty checking...
+                // Only trigger if values are different. Also, only add a trigger
+                // if one is not already queued.
+                if (newValue !== oldValue) {
+                    if (inst.opt.deep && newValue && isPureObject(newValue)) {
+                        makeObservable(newValue, null, true);
                     }
 
-                    // Dirty checking...
-                    // Only trigger if values are different. Also, only add a trigger
-                    // if one is not already queued.
-                    if (!watched[prop].queued && newValue !== oldValue) {
-                        watched[prop].notify(20);
-                    }
+                    propSetup.notify();
+                }
+            }
+        });
+
+    } else {
+        console.log(new Error("Unable to watch property [" + propName + "] - delete failed"));
+    }
+
+    return inst;
+}
+
+/**
+ * Created a computed property on a given object
+ *
+ * @method Observable.createComputed
+ *
+ * @param {Object} observable
+ * @param {String} propName
+ * @param {Function} valueGenerator
+ */
+export function createComputed(observable, propName, valueGenerator) {
+    if (observable && propName && valueGenerator) {
+        let runValueGenerator = true;
+        let propValue;
+        const dependencyChangeNotifier = () => {
+            // Trigger the Object property setter(). This does nothing as far as the
+            // computed value does, but provides compatibility for any code that
+            // might have overwritten the setter in order ot also listen for changes
+            // outside of this lib.
+            observable[propName] = "";
+
+            // Reset the internally cached prop value and set the flag to run the
+            // generator and then notify listeners.
+            propValue = null;
+            runValueGenerator = true;
+            getInstance(observable).watched[propName].notify();
+
+        };
+        const valueGetter = () => {
+            // FIXME: should we detect circular loops?
+
+            if (!runValueGenerator) {
+                return propValue;
+            }
+
+            setDependencyTracker(dependencyChangeNotifier);
+
+            try {
+                propValue = valueGenerator.call(observable);
+            }
+            catch(e) {
+                unsetDependencyTracker(dependencyChangeNotifier);
+                throw e;
+            }
+
+            unsetDependencyTracker(dependencyChangeNotifier);
+            runValueGenerator = false;
+            return propValue;
+        };
+        const valueSetter = () => {
+            /* FIXME: should this anything? */
+            return propValue;
+        };
+
+        dependencyChangeNotifier[IS_COMPUTED_NOTIFIER] = true;
+
+        const inst = makePropWatchable(observable, propName, valueGetter, valueSetter);
+        inst.watched[propName].isComputed = true;
+
+        let isDestroyDone = false;
+        const destroy = () => {
+            if (!isDestroyDone) {
+                isDestroyDone = true;
+                stopDependeeNotifications(dependencyChangeNotifier);
+                inst.watched[propName].destroy();
+                delete inst.watched[propName];
+                delete observable[propName];
+                observable[propName] = propValue;
+            }
+        };
+        return Object.create({ destroy });
+    }
+}
+
+/**
+ * Allows for adding a Dependee notifier to the global list of dependency trackers.
+ *
+ * @param {Function} dependeeNotifier
+ */
+export function setDependencyTracker(dependeeNotifier) {
+    if (dependeeNotifier && arrayIndexOf(dependeeList, dependeeNotifier) === -1) {
+        dependeeList.push(dependeeNotifier);
+    }
+}
+
+/**
+ * Removes a Dependee notifier from the global list of dependency trackers.
+ *
+ * @param {Function} dependeeNotifier
+ */
+export function unsetDependencyTracker(dependeeNotifier) {
+    if (!dependeeNotifier) {
+        return;
+    }
+    const index = arrayIndexOf(dependeeList, dependeeNotifier);
+    if (index !== -1) {
+        arraySplice(dependeeList, index, 1);
+    }
+}
+
+/**
+ * Removes a Dependee notifier from any stored ObservableProperty list of dependees, thus
+ * stopping all notifications to that depenedee.
+ *
+ * @param {Function} dependeeNotifier
+ */
+export function stopDependeeNotifications(dependeeNotifier) {
+    if (dependeeNotifier) {
+        emitInternalEvent(EV_STOP_DEPENDEE_NOTIFICATION, dependeeNotifier);
+    }
+}
+
+
+/**
+ * Assign the properties of one (or more) objects to the observable and
+ * makes those properties "watchable"
+ *
+ * @param {Object} observable
+ * @param {...Object} objs
+ *
+ * @return {Object} observable
+ */
+export function observableAssign(observable, ...objs) {
+    if (objs.length) {
+        arrayForEach(objs, obj => {
+            arrayForEach(objectKeys(obj), key => {
+                observable[key] = obj[key];
+                makePropWatchable(observable, key);
+            });
+        });
+    }
+    return observable;
+}
+
+/**
+ * Makes an Object observable or a given property of the object observable.
+ *
+ * @param {Object} observable
+ *  The object that should be made observable.
+ *
+ * @param {String} [propName]
+ *  if left unset, then all existing `own properties` of the object will
+ *  be made observable.
+ *
+ * @param {Boolean} [deep=false]
+ *  If set to `true` then the object, or the value the given `prop` (if defined)
+ *  will be "walked" and any object found made an observable as well.
+ */
+export function makeObservable(observable, propName, deep) {
+    if (observable) {
+        if (propName) {
+            makePropWatchable(observable, propName);
+        }
+        else {
+            arrayForEach(objectKeys(observable), prop => makePropWatchable(observable, prop));
+        }
+
+        if (deep) {
+            arrayForEach(objectKeys(observable), key => {
+                if (observable[key] && isPureObject(observable[key])) {
+                    makeObservable(observable[key], null, deep);
                 }
             });
-
-        } else {
-            try {
-                console.log("ObservableObject(Error) Unable to watch property [" + prop + "]");
-            } catch(e){}
         }
     }
 }
 
-ObservableObject = Compose.extend(ObservableObject);
+/**
+ *
+ * @param {Object} observable
+ * @param {String} propName
+ * @param {Function} notifier
+ * @returns {EventEmitter#EventListener}
+ */
+export function watchObservableProp(observable, propName, notifier) {
+    if (propName === observable || objectHasOwnProperty(observable, propName)) {
+        const inst = makePropWatchable(observable, propName);
+        return inst.on(propName === observable ? inst : propName, notifier);
+    }
+    else {
+        return noopEventListener;
+    }
+}
+
+/**
+ * Watch for changes on a given object property.
+ *
+ * @param {Object} observable
+ * @param {String} propName
+ * @param {Function} notifier
+ * @returns {EventEmitter#EventListener}
+ */
+export function watchObservablePropOnce(observable, propName, notifier) {
+    if (propName === observable || objectHasOwnProperty(observable, propName)) {
+        const inst = makePropWatchable(observable, propName);
+        return inst.once(propName === observable ? inst : propName, notifier);
+    }
+    else {
+        return noopEventListener;
+    }
+}
+
+/**
+ * Stop watching an object property.
+ *
+ * @param {Object} observable
+ * @param {String} propName
+ * @param {Function} notifier
+ */
+export function unwatchObservableProp(observable, propName, notifier) {
+    return getInstance(observable).off(propName, notifier);
+}
+
+
+/**
+ * Notifies watchers of a given Observable property
+ *
+ * @param {Object} observable
+ * @param {String} propName
+ */
+export function notifyObservablePropWatchers(observable, propName) {
+    let watched = getInstance(observable).watched;
+    if (watched[propName]) {
+        watched[propName].notify(true);
+    }
+}
 
 /**
  * Adds ObservableObject capabilities to an object.
  *
  * @method ObservableObject.mixin
  *
- * @param {Object} obj
+ * @param {Object} observable
  *
  * @return {Object}
  *  Same object that was given on input will be returned
  */
-ObservableObject.mixin = function(obj){
-    if (obj) {
-        Object.keys(ObservableObject.prototype).forEach(function(method){
-            if (!(method in obj) || obj[method] !== ObservableObject.prototype[method]) {
-                objectDefineProperty(obj, method, {
+export function observableMixin(observable) {
+    if (observable) {
+        arrayForEach(objectKeys(ObservableObject.prototype), function(method){
+            if (!(method in observable) || observable[method] !== ObservableObject.prototype[method]) {
+                objectDefineProperty(observable, method, {
                     value:          ObservableObject.prototype[method],
                     enumerable:     false,
                     configurable:   true
@@ -273,7 +656,16 @@ ObservableObject.mixin = function(obj){
             }
         });
     }
-    return obj;
+    return observable;
+}
+
+
+ObservableObject.createComputed = createComputed;
+ObservableObject.mixin = observableMixin;
+
+ObservableObject.defaults = {
+    watchAll:   true,
+    deep:       true
 };
 
 export default ObservableObject;

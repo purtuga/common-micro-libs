@@ -3,7 +3,7 @@ import dataStore from "./dataStore"
 
 //----------------------------------------------------------------
 const PRIVATE           = dataStore.create();
-const arraySlice        = Array.prototype.slice;
+const arraySlice        = Function.call.bind(Array.prototype.slice);
 const isFunction        = function(fn){return typeof fn === "function";};
 const objectCreate      = Object.create;
 const objectKeys        = Object.keys;
@@ -20,8 +20,9 @@ const EventEmitter = Compose.extend(/** @lends EventEmitter.prototype */{
      *
      * @param {String} evName
      *  The event name to be listened to or a list of event sperated by a space.
-     *  A `"*"` can be defined  as well which will essentially listen to all
-     *  events. Note that this special event however, will change the arguments
+     *  The EventEmitter instance can be used as the `evName` as well which will
+     *  essentially listen to all events.
+     *  Note that this special event however, will change the arguments
      *  passed to the callback by pre-pending the Event Name (`String`) and
      *  appending the Component instance.
      *
@@ -30,23 +31,37 @@ const EventEmitter = Compose.extend(/** @lends EventEmitter.prototype */{
      *  can cancel any queued event callbacks by returning `true` (boolean).
      *
      * @return {EventEmitter#EventListener}
+     *
+     * @example
+     *
+     * events.on("some-event", (...args) => {});
+     *
+     * // List to all events
+     * events.on(events, (evNameTriggered, ...args) => {}
      */
     on: function(evName, callback){
-        let listeners   = getSetup.call(this).listeners;
-        let events      = evName.split(/\s+/).reduce((eventList, eventName) => {
-            if (!(eventName in listeners)) {
-                listeners[eventName] = [];
+        let { all, listeners }  = getSetup.call(this);
+        let events              = getEventNameList(evName).reduce((eventList, eventName) => {
+            let callbackIndex;
+            let off;
+
+            // If eventName is `this` then listen to all events
+            if (eventName === this) {
+                all.push(callback);
+                callbackIndex = all.length - 1;
+                off = () => all[callbackIndex] = null;
+            }
+            else {
+                if (!(eventName in listeners)) {
+                    listeners[eventName] = [];
+                }
+
+                listeners[eventName].push(callback);
+                callbackIndex = listeners[eventName].length - 1;
+                off = () => listeners[eventName][callbackIndex] = null;
             }
 
-            listeners[eventName].push(callback);
-            let callbackIndex = listeners[eventName].length - 1;
-
-            eventList[eventName] = objectCreate({
-                off: () => {
-                    listeners[eventName][callbackIndex] = null;
-                }
-            });
-
+            eventList[eventName] = objectCreate({ off });
             return eventList;
         }, {});
         /**
@@ -80,15 +95,21 @@ const EventEmitter = Compose.extend(/** @lends EventEmitter.prototype */{
      *
      */
     off: function(evName, callback){
-        var listeners = getSetup.call(this).listeners;
+        const {all, listeners} = getSetup.call(this);
+        const removeCallbackIterator = function(thisCallback, index){
+            if (thisCallback === callback) {
+                listeners[evName][index] = null;
+                return true;
+            }
+        };
+
+        if (evName === this) {
+            all.some(removeCallbackIterator);
+            return;
+        }
 
         if (evName in listeners) {
-            listeners[evName].some(function(thisCallback, index){
-                if (thisCallback === callback) {
-                    listeners[evName][index] = null;
-                    return true;
-                }
-            });
+            listeners[evName].some(removeCallbackIterator);
         }
     },
 
@@ -103,7 +124,7 @@ const EventEmitter = Compose.extend(/** @lends EventEmitter.prototype */{
      * @return {EventEmitter#EventListener}
      */
     once: function(evName, callback){
-        let events = evName.split(/\s+/).reduce((eventListeners, eventName) => {
+        let events = getEventNameList(evName).reduce((eventListeners, eventName) => {
             let eventNameListener = this.on(evName, function(...args){
                 eventNameListener.off();
                 callback(...args);
@@ -129,13 +150,13 @@ const EventEmitter = Compose.extend(/** @lends EventEmitter.prototype */{
      * (boolean)
      *
      * @param {String} evName
-     *  The event name to be triggered. __NOTE__: can not be a `"*"` since it
-     *  holds special meaning.
+     *  The event name to be triggered. __NOTE__: can not be a `"*"` or the EventEmitter
+     *  instance since they holds special meaning.
      *
      * @param {...Function} callbackArgs
      */
     emit: function(evName){
-        if (evName === "*") {
+        if (evName === "*" || evName === this) {
             try { console.warning("EventEmitter#emit(): can not emit to events to '*'"); } catch(e){} // jshint ignore:line
             return;
         }
@@ -144,7 +165,7 @@ const EventEmitter = Compose.extend(/** @lends EventEmitter.prototype */{
         setup           = getSetup.call(this),
         eventListeners  = setup.listeners,
         eventPipes      = setup.pipes,
-        args            = arraySlice.call(arguments, 1),
+        args            = arraySlice(arguments, 1),
         isCanceled      = false,
         callbackHandler = function(callback){
             if (isFunction(callback)) {
@@ -163,15 +184,20 @@ const EventEmitter = Compose.extend(/** @lends EventEmitter.prototype */{
             // Regular event listeners
             (eventListeners[evName] || []).some(callbackHandler);
 
+            // Event listeners for all events
             if (!isCanceled) {
                 // Special event "*": pass event name and instance
-                args = arraySlice.call(arguments, 0);
+                args = arraySlice(arguments, 0);
                 args.push(this);
 
                 (eventListeners["*"] || []).some(callbackHandler);
 
+                if (!isCanceled) {
+                    setup.all.some(callbackHandler);
+                }
+
                 // set args back to original
-                args = arraySlice.call(arguments, 1);
+                args = arraySlice(arguments, 1);
             }
         }
 
@@ -253,17 +279,15 @@ function getSetup(){
     if (!PRIVATE.has(this)) {
         /*
             listeners: {
-                'evName': [
-                    // callbacks
-                ]
+                'evName': [ Callbacks ]
             },
-            pipes: [
-                // pipeEmitters
-            ]
+            pipes: [ Callbacks ]
+            all: [ Callbacks ]
         */
         PRIVATE.set(this, {
             listeners:  {},
-            pipes:      []
+            pipes:      [],
+            all:        []
         });
 
         // When this object is destroyed, remove all data
@@ -276,6 +300,13 @@ function getSetup(){
         }
     }
     return PRIVATE.get(this);
+}
+
+function getEventNameList(eventNamesStr) {
+    if ("string" === typeof eventNamesStr) {
+        return eventNamesStr.split(/\s+/);
+    }
+    return [eventNamesStr];
 }
 
 /**

@@ -4,7 +4,11 @@
   "description": "",
   "main": "",
   "scripts": {
-    "test": "node test/index.js"
+    "test": "tape test/**/*.js | faucet",
+    "watch": "npm-watch"
+  },
+  "watch": {
+    "test": "{src,test}/**/*.js"
   },
   "repository": {
     "type": "git",
@@ -27,16 +31,18 @@
     "eslint": "^3.6.0",
     "eslint-config-google": "^0.6.0",
     "eslint-loader": "^1.5.0",
+    "faucet": "0.0.1",
     "file-loader": "^0.9.0",
     "less": "^2.7.1",
     "less-loader": "^2.2.3",
+    "npm-watch": "^0.2.0",
     "raw-loader": "^0.5.1",
     "style-loader": "^0.13.1",
     "tape": "^4.8.0",
     "text-loader": "0.0.1",
     "url-loader": "^0.5.7",
-    "webpack": "^1.12.14",
-    "webpack-dev-server": "^1.14.1",
+    "webpack": "^3.6.0",
+    "webpack-dev-server": "^2.9.1",
     "wrapper-webpack-plugin": "^0.1.7"
   }
 }
