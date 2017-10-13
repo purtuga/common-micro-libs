@@ -1,4 +1,3 @@
-import Compose      from "./Compose"
 import EventEmitter from "./EventEmitter"
 
 //==============================================================
@@ -20,7 +19,6 @@ const changeMethods     = [
  *
  * @class Collection
  *
- * @extends Compose
  * @extends EventEmitter
  * @extends Array
  *
@@ -34,9 +32,9 @@ var Collection = /** @lends Collection.prototype */{
     },
 
     /**
-     * Returns the size of the collection
+     * The size of the collection. Same as `array#length`
      *
-     * @returns {Number}
+     * @type Number
      */
     size: function(){
         return this.length;
@@ -100,7 +98,7 @@ Object.getOwnPropertyNames(ArrayPrototype).forEach(function(method){
     }
 });
 
-Collection = Compose.extend(EventEmitter, Collection);
+Collection = EventEmitter.extend(Collection);
 
 // Define the "create" factory method that will then redefine each
 // our proxyied methods of Array prototype into the array instance
