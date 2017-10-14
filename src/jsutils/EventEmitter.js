@@ -165,6 +165,7 @@ const EventEmitter = Compose.extend(/** @lends EventEmitter.prototype */{
         setup           = getSetup.call(this),
         eventListeners  = setup.listeners,
         eventPipes      = setup.pipes,
+        eventAll        = setup.all,
         args            = arraySlice(arguments, 1),
         isCanceled      = false,
         callbackHandler = function(callback){
@@ -180,25 +181,27 @@ const EventEmitter = Compose.extend(/** @lends EventEmitter.prototype */{
             }
         };
 
-        if (evName in eventListeners || "*" in eventListeners) {
+        if (evName in eventListeners) {
             // Regular event listeners
             (eventListeners[evName] || []).some(callbackHandler);
+        }
 
-            // Event listeners for all events
-            if (!isCanceled) {
-                // Special event "*": pass event name and instance
-                args = arraySlice(arguments, 0);
-                args.push(this);
+        // Event listeners for all events
+        if (
+            !isCanceled &&
+            (
+                "*" in eventListeners ||
+                eventAll.length
+            )
+        ) {
+            // Special event "*": pass event name and instance
+            args = arraySlice(arguments, 0);
+            args.push(this);
 
-                (eventListeners["*"] || []).some(callbackHandler);
+            (eventListeners["*"] || []).concat(eventAll).some(callbackHandler);
 
-                if (!isCanceled) {
-                    setup.all.some(callbackHandler);
-                }
-
-                // set args back to original
-                args = arraySlice(arguments, 1);
-            }
+            // set args back to original
+            args = arraySlice(arguments, 1);
         }
 
         eventPipes.forEach(function(pipe){
