@@ -1,13 +1,20 @@
+import getGlobal from "./getGlobal"
+
 /**
  * Polyfill from: https://github.com/jfriend00/ES6-Set
  * MIT
+ *
+ * Changed for my own needs
  */
+
+const _GLOBAL = getGlobal();
+let _Set;
 
 // IE11 has an incomplete implementation of Set which doesn't allow you to iterate the keys
 // so this code assumes you want a full implementation and will redefine Set if the half
 // implementation is present
-if (typeof Set === "undefined" || typeof Set.prototype.keys !== "function") {
-    var Set = (function() {
+if (typeof _GLOBAL.Set === "undefined" || typeof _GLOBAL.Set.prototype.keys !== "function") {
+    _Set = (function() {
         "use strict";
 
         var iterables = {
@@ -273,6 +280,9 @@ if (typeof Set === "undefined" || typeof Set.prototype.keys !== "function") {
 
         return SetConstructor;
     })();
+}
+else {
+    _Set = _GLOBAL.Set;
 }
 
 export default Set;

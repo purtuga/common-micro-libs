@@ -1,5 +1,6 @@
-import Compose   from "./Compose"
-import dataStore from "./dataStore"
+import Compose      from "./Compose"
+import dataStore    from "./dataStore"
+import Set          from "./es6-Set"
 
 //----------------------------------------------------------------
 const PRIVATE           = dataStore.create();
@@ -53,12 +54,11 @@ const EventEmitter = Compose.extend(/** @lends EventEmitter.prototype */{
             }
             else {
                 if (!(eventName in listeners)) {
-                    listeners[eventName] = [];
+                    listeners[eventName] = new Set();
                 }
 
-                listeners[eventName].push(callback);
-                callbackIndex = listeners[eventName].length - 1;
-                off = () => listeners[eventName][callbackIndex] = null;
+                listeners[eventName].add(callback);
+                off = () => listeners[eventName].delete(callback);
             }
 
             eventList[eventName] = objectCreate({ off });
@@ -109,7 +109,7 @@ const EventEmitter = Compose.extend(/** @lends EventEmitter.prototype */{
         }
 
         if (evName in listeners) {
-            listeners[evName].some(removeCallbackIterator);
+            listeners.delete(callback);
         }
     },
 
@@ -179,9 +179,13 @@ const EventEmitter = Compose.extend(/** @lends EventEmitter.prototype */{
             }
         };
 
-        if (evName in eventListeners) {
-            // Regular event listeners
-            (eventListeners[evName] || []).some(callbackHandler);
+        // Regular event listeners
+        if (eventListeners[evName] && eventListeners[evName].size) {
+            for (let cb of eventListeners[evName]) {
+                if (callbackHandler(cb)) {
+                    break;
+                }
+            }
         }
 
         // Event listeners for all events
@@ -196,7 +200,17 @@ const EventEmitter = Compose.extend(/** @lends EventEmitter.prototype */{
             args = arraySlice(arguments, 0);
             args.push(this);
 
-            (eventListeners["*"] || []).concat(eventAll).some(callbackHandler);
+            if (eventListeners["*"] && eventListeners["*"].size) {
+                for (let cb of eventListeners["*"]) {
+                    if (callbackHandler(cb)) {
+                        break;
+                    }
+                }
+            }
+
+            if (eventAll.length) {
+                eventAll.some(callbackHandler);
+            }
 
             // set args back to original
             args = arraySlice(arguments, 1);
@@ -266,7 +280,7 @@ const EventEmitter = Compose.extend(/** @lends EventEmitter.prototype */{
      */
     hasListeners() {
         const { listeners, pipes } = getSetup.call(this);
-        return objectKeys(listeners).some(evName => listeners[evName].some(evListener => !!evListener)) ||
+        return objectKeys(listeners).some(evName => !!listeners[evName].size) ||
                 pipes.some(evEmitter => !!evEmitter);
     }
 });
