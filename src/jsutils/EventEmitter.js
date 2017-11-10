@@ -153,28 +153,26 @@ const EventEmitter = Compose.extend(/** @lends EventEmitter.prototype */{
      *  The event name to be triggered. __NOTE__: can not be a `"*"` or the EventEmitter
      *  instance since they holds special meaning.
      *
-     * @param {...Function} callbackArgs
+     * @param {...*} callbackArgs
      */
     emit: function(evName){
         if (evName === "*" || evName === this) {
-            try { console.warning("EventEmitter#emit(): can not emit to events to '*'"); } catch(e){} // jshint ignore:line
+            console.log("EventEmitter#emit(): can not emit to events to '*'"); // jshint ignore:line
             return;
         }
 
-        var
-        setup           = getSetup.call(this),
-        eventListeners  = setup.listeners,
-        eventPipes      = setup.pipes,
-        eventAll        = setup.all,
-        args            = arraySlice(arguments, 1),
-        isCanceled      = false,
-        callbackHandler = function(callback){
+        let setup           = getSetup.call(this);
+        let eventListeners  = setup.listeners;
+        let eventPipes      = setup.pipes;
+        let eventAll        = setup.all;
+        let args            = arraySlice(arguments, 1);
+        let isCanceled      = false;
+        let callbackHandler = function(callback){
             if (isFunction(callback)) {
                 var response = callback.apply(callback, args);
 
-                // if a boolean true was returned, don't call any more
-                // listeners.
-                if (response && typeof response === "boolean") {
+                // if a boolean true was returned, don't call any more listeners.
+                if (response === true) {
                     isCanceled = true;
                     return true;
                 }
