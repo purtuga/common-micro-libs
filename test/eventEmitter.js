@@ -105,6 +105,33 @@ test("EventEmitter", t => {
         st.end();
     });
 
+    t.test("pipe(): send events to other EventEmitters", st => {
+        const pipeTo = EventEmitter.create();
+        const pipeReceiver = () => {pipeReceiver.count = pipeReceiver.count || 0;  pipeReceiver.count++};
+        let pipeEv1 = pipeTo.on("ev1", pipeReceiver);
+        let toPipeEv = events.pipe(pipeTo);
+
+        events.emit("ev1");
+        st.equal(pipeReceiver.count, 1, "pipedTo received event.");
+
+        toPipeEv.off();
+        events.emit("ev1");
+        st.equal(pipeReceiver.count, 1, "pipedTo event is turned off");
+
+        pipeEv1.off();
+        pipeReceiver.count = 0;
+        pipeEv1 = pipeTo.on("pre-ev1", pipeReceiver);
+        toPipeEv = events.pipe(pipeTo, "pre-");
+        events.emit("ev1");
+        st.equal(pipeReceiver.count, 1, "piped to received event with prefix");
+
+        pipeTo.destroy();
+        events.emit("ev1");
+        st.equal(pipeReceiver.count, 1, "no listeners are called after destroy()");
+
+        st.end();
+    });
+
     t.end();
 });
 
