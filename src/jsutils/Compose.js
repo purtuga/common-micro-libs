@@ -155,34 +155,65 @@ const staticMethods = /** @lends Compose */{
      *      }
      * });
      */
-    getDestroyCallback(instanceState, stateStore) {
-        return () => {
-            if (instanceState) {
-                // Destroy all Compose object
-                Object.keys(instanceState).forEach(function (prop) {
-                    if (instanceState[prop]) {
-                        [
-                            "destroy",      // Compose
-                            "remove",       // DOM Events Listeners
-                            "off"           // EventEmitter Listeners
-                        ].some((method) => {
-                            if (instanceState[prop][method]) {
-                                instanceState[prop][method]();
-                                return true;
-                            }
-                        });
+    getDestroyCallback: getDestroyCallback
+};
 
-                        instanceState[prop] = undefined;
-                    }
-                });
-            }
 
-            if (stateStore && stateStore.has && stateStore.has(instanceState)) {
-                stateStore['delete'](instanceState);
-            }
+/**
+ * Returns a standard callback that can be used to remove cleanup instance state
+ * from specific Store (WeakMap). Returned function will destroy known Instances
+ * that have destroy methods.
+ *
+ * @method Compose~getDestroyCallback
+ *
+ * @param {Object} instanceState
+ * @param {WeakMap} [stateStore]
+ *
+ * @return {Function}
+ *
+ * @example
+ *
+ * const MY_PRIVATE = new WeakMap();
+ * cont NewWdg = Componse.extend({
+ *      init() {
+ *          const state = {};
+ *          MY_PRIVATE.set(this, state);
+ *          ...
+ *
+ *          this.onDestroy(Compose.getDestroyCallback(state, MY_PRIVATE));
+ *      }
+ * });
+ */
+export function getDestroyCallback (instanceState, stateStore) {
+    return () => {
+        if (instanceState) {
+            // Destroy all Compose object
+            Object.keys(instanceState).forEach(function (prop) {
+                if (instanceState[prop]) {
+                    [
+                        "destroy",      // Compose
+                        "remove",       // DOM Events Listeners
+                        "off"           // EventEmitter Listeners
+                    ].some((method) => {
+                        if (
+                            instanceState[prop][method] &&
+                            (method !== "remove" || !(instanceState[prop] instanceof Node)) // Caution: should not remove DOM elements.
+                        ) {
+                            instanceState[prop][method]();
+                            return true;
+                        }
+                    });
+
+                    instanceState[prop] = undefined;
+                }
+            });
+        }
+
+        if (stateStore && stateStore.has && stateStore.has(instanceState)) {
+            stateStore.delete(instanceState);
         }
     }
-};
+}
 
 function getInstanceState(inst) {
     if (!PRIVATE.has(inst)) {
@@ -196,6 +227,7 @@ function getInstanceState(inst) {
  * Composes new factory methods from a list of given Objects/Classes.
  *
  * @class Compose
+ * @borrows Compose~getDestroyCallback as Compose.getDestroyCallback
  *
  * @example
  *
