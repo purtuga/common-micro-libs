@@ -212,11 +212,11 @@ const EventEmitter = Compose.extend(/** @lends EventEmitter.prototype */{
             args = arraySlice(arguments, 1);
         }
 
-        eventPipes.forEach(function(pipe){
-            if (isFunction(pipe)) {
-                pipe(evName, args);
+        if (eventPipes.size) {
+            for (let pipe of eventPipes) {
+                pipe && pipe(evName, args);
             }
-        });
+        }
     },
 
     /**
@@ -243,10 +243,10 @@ const EventEmitter = Compose.extend(/** @lends EventEmitter.prototype */{
         if (!pipeTo || !pipeTo.on) {
             return objectCreate({ off: function(){} });
         }
-        var pipes = getSetup.call(this).pipes,
-            callbackIndex;
 
-        pipes.push(function(triggeredEvName, args){
+        const pipes = getSetup.call(this).pipes;
+
+        const pipeEvToReceiver = (triggeredEvName, args) => {
             if (prefix) {
                 args.unshift(prefix + triggeredEvName);
 
@@ -259,13 +259,13 @@ const EventEmitter = Compose.extend(/** @lends EventEmitter.prototype */{
             }
 
             pipeTo.emit.apply(pipeTo, args);
-        }.bind(this));
+        };
 
-        callbackIndex = pipes.length - 1;
+        pipes.add(pipeEvToReceiver);
 
         return objectCreate({
-            off: function(){
-                pipes[callbackIndex] = null;
+            off() {
+                pipes.delete(pipeEvToReceiver);
             }
         });
     },
@@ -276,8 +276,7 @@ const EventEmitter = Compose.extend(/** @lends EventEmitter.prototype */{
      */
     hasListeners() {
         const { listeners, pipes } = getSetup.call(this);
-        return objectKeys(listeners).some(evName => !!listeners[evName].size) ||
-                pipes.some(evEmitter => !!evEmitter);
+        return objectKeys(listeners).some(evName => !!listeners[evName].size) || !!pipes.size;
     }
 });
 
@@ -292,12 +291,12 @@ function getSetup(){
             listeners: {
                 'evName': Set[ Callbacks ]
             },
-            pipes: [ Callbacks ]
+            pipes: Set[ Callbacks ]
             all: Set[ Callbacks ]
         */
         PRIVATE.set(this, {
             listeners:  {},
-            pipes:      [],
+            pipes:      new Set(),
             all:        new Set()
         });
 
