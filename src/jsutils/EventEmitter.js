@@ -43,14 +43,12 @@ const EventEmitter = Compose.extend(/** @lends EventEmitter.prototype */{
     on: function(evName, callback){
         let { all, listeners }  = getSetup.call(this);
         let events              = getEventNameList(evName).reduce((eventList, eventName) => {
-            let callbackIndex;
             let off;
 
             // If eventName is `this` then listen to all events
             if (eventName === this) {
-                all.push(callback);
-                callbackIndex = all.length - 1;
-                off = () => all[callbackIndex] = null;
+                all.add(callback);
+                off = () => all.delete(callback);
             }
             else {
                 if (!(eventName in listeners)) {
@@ -95,20 +93,14 @@ const EventEmitter = Compose.extend(/** @lends EventEmitter.prototype */{
      *
      */
     off: function(evName, callback){
-        const {all, listeners} = getSetup.call(this);
-        const removeCallbackIterator = function(thisCallback, index){
-            if (thisCallback === callback) {
-                listeners[evName][index] = null;
-                return true;
-            }
-        };
+        const { all, listeners } = getSetup.call(this);
 
         if (evName === this) {
-            all.some(removeCallbackIterator);
+            all.delete(callback);
             return;
         }
 
-        if (evName in listeners) {
+        if (listeners[evName]) {
             listeners.delete(callback);
         }
     },
@@ -193,7 +185,7 @@ const EventEmitter = Compose.extend(/** @lends EventEmitter.prototype */{
             !isCanceled &&
             (
                 "*" in eventListeners ||
-                eventAll.length
+                eventAll.size
             )
         ) {
             // Special event "*": pass event name and instance
@@ -208,8 +200,12 @@ const EventEmitter = Compose.extend(/** @lends EventEmitter.prototype */{
                 }
             }
 
-            if (eventAll.length) {
-                eventAll.some(callbackHandler);
+            if (eventAll.size) {
+                for (let cb of eventAll) {
+                    if (callbackHandler(cb)) {
+                        break;
+                    }
+                }
             }
 
             // set args back to original
@@ -294,15 +290,15 @@ function getSetup(){
     if (!PRIVATE.has(this)) {
         /*
             listeners: {
-                'evName': [ Callbacks ]
+                'evName': Set[ Callbacks ]
             },
             pipes: [ Callbacks ]
-            all: [ Callbacks ]
+            all: Set[ Callbacks ]
         */
         PRIVATE.set(this, {
             listeners:  {},
             pipes:      [],
-            all:        []
+            all:        new Set()
         });
 
         // When this object is destroyed, remove all data
