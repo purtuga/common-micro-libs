@@ -1,12 +1,11 @@
-import Compose      from "./Compose"
-import dataStore    from "./dataStore"
-import Set          from "./es6-Set"
+import Compose from "./Compose";
+import dataStore from "./dataStore";
+import Set from "./es6-Set";
 
 //----------------------------------------------------------------
 const PRIVATE           = dataStore.create();
 const arraySlice        = Function.call.bind(Array.prototype.slice);
 const isFunction        = function(fn){return typeof fn === "function";};
-const objectCreate      = Object.create;
 const objectKeys        = Object.keys;
 
 /**
@@ -59,7 +58,7 @@ const EventEmitter = Compose.extend(/** @lends EventEmitter.prototype */{
                 off = () => listeners[eventName].delete(callback);
             }
 
-            eventList[eventName] = objectCreate({ off });
+            eventList[eventName] = { off };
             return eventList;
         }, {});
         /**
@@ -75,11 +74,11 @@ const EventEmitter = Compose.extend(/** @lends EventEmitter.prototype */{
          * @property {Function} off
          *  Remove callback from event.
          */
-        let response = objectCreate({
+        let response = {
             off: function(){
                 objectKeys(events).forEach(eventName => events[eventName].off());
             }
-        });
+        };
 
         response.listeners = events;
         return response;
@@ -126,11 +125,11 @@ const EventEmitter = Compose.extend(/** @lends EventEmitter.prototype */{
             return eventListeners;
         }, {});
 
-        let response = objectCreate({
+        let response = {
             off: function(){
                 objectKeys(events).forEach(eventName => events[eventName].off());
             }
-        });
+        };
 
         response.listeners = events;
         return response;
@@ -241,7 +240,7 @@ const EventEmitter = Compose.extend(/** @lends EventEmitter.prototype */{
      */
     pipe: function(pipeTo, prefix, includeInstance){
         if (!pipeTo || !pipeTo.on) {
-            return objectCreate({ off: function(){} });
+            return { off: function(){} };
         }
 
         const pipes = getSetup.call(this).pipes;
@@ -263,11 +262,11 @@ const EventEmitter = Compose.extend(/** @lends EventEmitter.prototype */{
 
         pipes.add(pipeEvToReceiver);
 
-        return objectCreate({
+        return {
             off() {
                 pipes.delete(pipeEvToReceiver);
             }
-        });
+        };
     },
 
     /**
