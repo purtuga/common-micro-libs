@@ -81,15 +81,19 @@ export const DomElementResizeMonitor = EventEmitter.extend(/** @lends DomElement
 
         objectEle.type = 'text/html';
 
-        if (IS_IE) {
-            appendChild(shadowEle, objectEle);
-        }
-
-        objectEle.data = 'about:blank';
-
         if (!IS_IE) {
-            appendChild(shadowEle, objectEle);
+            objectEle.data = "about:blank";
         }
+        else {
+            // IE needs to have the object attached to DOM before setting the data.
+            // If the parent element itself is not attached to DOM the object is not initialzed.
+            // To ensure the object is initialized correctly, we add it first to the
+            // document.body and then set its data.
+            appendChild(document.body, objectEle);
+            objectEle.data = "about:blank";
+        }
+
+        appendChild(shadowEle, objectEle);
 
         this.onDestroy(this.getFactory().getDestroyCallback(inst, PRIVATE));
     },
