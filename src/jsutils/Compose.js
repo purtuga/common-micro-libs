@@ -1,5 +1,6 @@
-import objectExtend from "./objectExtend"
-import dataStore    from "./dataStore"
+import objectExtend     from "./objectExtend"
+import dataStore        from "./dataStore"
+import queueCallback    from "./queueCallback"
 
 //=========================================================
 const PRIVATE = dataStore.create();
@@ -28,20 +29,21 @@ const baseMethods = /** @lends Compose.prototype */{
     /**
      * instance initializing code
      */
-    init: function(){},
+    init(){},
 
     /**
      * Destroys the instance, by removing its private data.
      */
-    destroy:    function(){
+    destroy(){
         if (PRIVATE.has(this)) {
-            PRIVATE.get(this).forEach(function(callback, i){
+            let destroyCallbacks = PRIVATE.get(this);
+            PRIVATE.delete(this);
+
+            queueCallback(() => (destroyCallbacks.forEach(function(callback){
                 if ("function" === typeof callback) {
                     callback();
                 }
-            });
-
-            PRIVATE.delete(this);
+            })));
         }
 
         if ("boolean" === typeof this.isDestroyed) {
@@ -55,7 +57,7 @@ const baseMethods = /** @lends Compose.prototype */{
      *
      * @param {Function} callback
      */
-    onDestroy: function(callback){
+    onDestroy(callback){
         getInstanceState(this).push(callback);
     },
 
@@ -64,7 +66,7 @@ const baseMethods = /** @lends Compose.prototype */{
      *
      * @return {Compose}
      */
-    getFactory: function(){} // set by .extend()
+    getFactory(){} // set by .extend()
 };
 
 

@@ -1,15 +1,13 @@
 import Compose          from "./Compose"
-import dataStore        from "./dataStore"
 import domAddClass      from "../domutils/domAddClass"
 import domRemoveClass   from "../domutils/domRemoveClass"
 import domChildren      from "../domutils/domChildren"
 
 import "./styles/widget.less"
 
-
-var
-CSS_CLASS_BASE = "my-widget",
-CSS_CLASS_HIDE = CSS_CLASS_BASE + "-hide",
+//============================================================================
+const CSS_CLASS_BASE = "my-widget";
+const CSS_CLASS_HIDE = CSS_CLASS_BASE + "-hide";
 
 /**
  * Base class for a Widget
@@ -18,10 +16,10 @@ CSS_CLASS_HIDE = CSS_CLASS_BASE + "-hide",
  * @extends Compose
  *
  */
-Widget = /** @lends Widget.prototype */{
+const Widget = Compose.extend(/** @lends Widget.prototype */{
 
     init: function(){
-        var me = this;
+        const me = this;
         me.onDestroy(function(){
             destroy.call(me);
         });
@@ -45,12 +43,10 @@ Widget = /** @lends Widget.prototype */{
      * by this method. Should be implemented by specfic widget if this pattern
      * is not implemented.
      *
-     * @return {DOMElement}
+     * @return {HTMLElement}
      */
     getEle: function(){
-        if (this.$ui) {
-            return this.$ui;
-        }
+        return this.$ui;
     },
 
     /**
@@ -60,7 +56,7 @@ Widget = /** @lends Widget.prototype */{
      * @return {Boolean}
      */
     isVisible: function(){
-        var $ui = this.getEle();
+        const $ui = this.getEle();
 
         return !!(
             $ui.offsetWidth     ||
@@ -74,7 +70,7 @@ Widget = /** @lends Widget.prototype */{
      * the opposite state.
      */
     toggle: function(){
-        var me = this;
+        const me = this;
         if (me.isVisible()){
             me.hide();
         } else {
@@ -135,12 +131,12 @@ Widget = /** @lends Widget.prototype */{
      * Removes the Widget from it's parent (removes it from DOM)
      */
     detach: function(){
-        var ui = this.getEle();
+        const ui = this.getEle();
         if (ui && ui.parentNode) {
             ui.parentNode.removeChild(ui);
         }
     }
-}; // end: Widget
+});
 
 /**
  * @private
@@ -149,8 +145,6 @@ function destroy() {
     this.detach();
     this.$ui = null;
 }
-
-Widget = Compose.extend(Widget);
 
 export default Widget;
 
