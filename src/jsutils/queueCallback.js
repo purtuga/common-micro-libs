@@ -24,11 +24,11 @@ export default function queueCallback(cb) {
 
 function flushQueue() {
     const cbList  = [...callbacks];
-    let cb;
     callbacks.clear();
+    queue = null;
+    let cb;
     while (cb = cbList.shift()) {
         cb();
         cb = null;
     }
-    queue = null;
 }
