@@ -33,17 +33,22 @@ const baseMethods = /** @lends Compose.prototype */{
 
     /**
      * Destroys the instance, by removing its private data.
+     * Any attached `onDestroy` callback will be executed `async` - queued and
+     * called on next event loop
+     *
+     * @param {Boolean} [executeCallbacksNow=false]
      */
-    destroy(){
+    destroy(executeCallbacksNow){
         if (PRIVATE.has(this)) {
             let destroyCallbacks = PRIVATE.get(this);
             PRIVATE.delete(this);
 
-            queueCallback(() => (destroyCallbacks.forEach(function(callback){
-                if ("function" === typeof callback) {
-                    callback();
-                }
-            })));
+            if (executeCallbacksNow) {
+                destroyCallbacks.forEach(callOnDestroyCallback);
+            }
+            else {
+                queueCallback(() => destroyCallbacks.forEach(callOnDestroyCallback));
+            }
         }
 
         if ("boolean" === typeof this.isDestroyed) {
@@ -223,6 +228,12 @@ function getInstanceState(inst) {
     }
 
     return PRIVATE.get(inst);
+}
+
+function callOnDestroyCallback (callback){
+    if ("function" === typeof callback) {
+        callback();
+    }
 }
 
 /**

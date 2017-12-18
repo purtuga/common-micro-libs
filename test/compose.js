@@ -1,6 +1,8 @@
 require         = require('@std/esm')(module, { cjs: true, esm: 'js' });
 const test      = require("tape");
 const Compose   = require("../src/jsutils/Compose").default;
+const delay     = ms => new Promise(resolve => setTimeout(resolve, ms || 0));
+const consoleLog    = console.log.bind(console)
 
 test("Compose", t => {
     t.test("Static Methods", st => {
@@ -73,7 +75,9 @@ test("Compose", t => {
         t.end();
     });
 
-    t.test(".destroy() calls callbacks", st => {
+    t.test(".destroy() calls callbacks async", st => {
+        st.plan(3);
+
         const inst   = Compose.extend({ init() {} }).create();
         const spy1   = () => spy1.count++;
 
@@ -81,10 +85,32 @@ test("Compose", t => {
         inst.onDestroy(spy1);
 
         inst.destroy();
+        delay(1)
+            .then(() => {
+                st.equal(spy1.count, 1, "Destroy executes callbacks");
+                st.equal(inst.isDestroyed, true, "inst .isDestroyed is set");
+                inst.destroy();
+                return delay(1);
+            })
+            .then(() => {
+                st.equal(spy1.count, 1, "destroy callbacks only called once");
+            })
+            .catch(consoleLog);
+
+    });
+
+    t.test(".destroy() calls callbacks sync", st => {
+        const inst   = Compose.extend({ init() {} }).create();
+        const spy1   = () => spy1.count++;
+
+        spy1.count = 0;
+        inst.onDestroy(spy1);
+
+        inst.destroy(true);
         st.equal(spy1.count, 1, "Destroy executes callbacks");
         st.equal(inst.isDestroyed, true, "inst .isDestroyed is set");
 
-        inst.destroy();
+        inst.destroy(true);
         st.equal(spy1.count, 1, "destroy callbacks only called once");
 
         st.end();
