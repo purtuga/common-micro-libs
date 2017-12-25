@@ -245,6 +245,7 @@ function getNewConstructor () {
             return this.init();
         }
 
+        // called directly
         return new ComposeConstructor(...arguments);
     }
 
@@ -265,9 +266,8 @@ function getNewConstructor () {
  * myWidget = Widget.create();
  *
  */
-const Compose                   = getNewConstructor();
-Compose.prototype               = baseMethods;
-Compose.prototype.constructor   = Compose;
+const Compose = getNewConstructor();
+objectExtend(Compose.prototype, baseMethods);
 objectExtend(Compose, staticMethods);
 
 export default Compose;
