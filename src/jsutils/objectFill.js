@@ -8,12 +8,15 @@
  * @return {Object}
  * The original `target` object is returned
  */
-export default function objectFill (target, ...fillers) {
+export function objectFill (target, ...fillers) {
     fillers.forEach(filler => {
         if (filler) {
-            Object.keys(filler).forEach(fillerAttr => {
-                if (!(fillerAttr in target)) {
-                    target[fillerAttr] = filler[fillerAttr];
+            Object.keys(filler).forEach(attrName => {
+                if (!(attrName in target)) {
+                    target[attrName] = filler[attrName];
+                }
+                else if (isPureObject(target[attrName] && isPureObject(filler[attrName]))) {
+                    objectFill(target[attrName], filler[attrName]);
                 }
             });
         }
@@ -21,3 +24,10 @@ export default function objectFill (target, ...fillers) {
 
     return target;
 }
+
+function isPureObject(obj) {
+    return Object.prototype.toString.call(obj) === "[object Object]";
+}
+
+// Default export
+export default objectFill;
