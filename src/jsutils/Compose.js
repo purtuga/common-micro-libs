@@ -4,6 +4,11 @@ import queueCallback    from "./queueCallback"
 
 //=========================================================
 const PRIVATE = dataStore.create();
+const COMMON_DESTROY_METHOD_NAME = [
+    "destroy",      // Compose
+    "remove",       // DOM Events Listeners
+    "off"           // EventEmitter Listeners
+];
 
 // Aliases
 const objectCreate = Object.create;
@@ -134,11 +139,7 @@ const staticMethods = /** @lends Compose */{
      * @return {Object}
      */
     create: function(){
-        var instance = objectCreate(this.prototype);
-        if (instance.init) {
-            instance.init.apply(instance, arguments);
-        }
-        return instance;
+        return new this(...arguments);
     },
 
     /**
@@ -199,11 +200,7 @@ export function getDestroyCallback (instanceState, stateStore) {
             // Destroy all Compose object
             Object.keys(instanceState).forEach(function (prop) {
                 if (instanceState[prop]) {
-                    [
-                        "destroy",      // Compose
-                        "remove",       // DOM Events Listeners
-                        "off"           // EventEmitter Listeners
-                    ].some((method) => {
+                    COMMON_DESTROY_METHOD_NAME.some((method) => {
                         if (
                             instanceState[prop][method] &&
                             (method !== "remove" || !(instanceState[prop] instanceof Node)) // Caution: should not remove DOM elements.
@@ -239,14 +236,14 @@ function callOnDestroyCallback (callback){
 }
 
 function getNewConstructor () {
-    function ComposeConstructor() {
+    function ComposeConstructor(...args) {
         // Called with `new`?
         if (this && this.constructor && this instanceof this.constructor) {
-            return this.init();
+            return this.init(...args);
         }
 
         // called directly
-        return new ComposeConstructor(...arguments);
+        return new ComposeConstructor(...args);
     }
 
     ComposeConstructor.prototype.constructor = ComposeConstructor;
