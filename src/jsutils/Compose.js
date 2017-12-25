@@ -84,7 +84,7 @@ const staticMethods = /** @lends Compose */{
      * @return {Compose}
      */
     extend: function(...args){
-        let Factory = function(){};
+        let Factory = getNewConstructor();
 
         Factory.prototype = args.reduce(function(newProto, obj){
             if (obj) {
@@ -101,6 +101,8 @@ const staticMethods = /** @lends Compose */{
         Factory.prototype.getFactory = function(){
             return Factory;
         };
+
+        Factory.prototype.constructor = Factory;
 
         // Extend new factory with statics from this factory
         return objectExtend(true, Factory, this);
@@ -236,6 +238,20 @@ function callOnDestroyCallback (callback){
     }
 }
 
+function getNewConstructor () {
+    function ComposeConstructor() {
+        // Called with `new`?
+        if (this && this.constructor && this instanceof this.constructor) {
+            return this.init();
+        }
+
+        return new ComposeConstructor(...arguments);
+    }
+
+    ComposeConstructor.prototype.constructor = ComposeConstructor;
+    return ComposeConstructor;
+}
+
 /**
  * Composes new factory methods from a list of given Objects/Classes.
  *
@@ -249,8 +265,9 @@ function callOnDestroyCallback (callback){
  * myWidget = Widget.create();
  *
  */
-var Compose = function(){};
-Compose.prototype = objectCreate(baseMethods);
+const Compose                   = getNewConstructor();
+Compose.prototype               = baseMethods;
+Compose.prototype.constructor   = Compose;
 objectExtend(Compose, staticMethods);
 
 export default Compose;

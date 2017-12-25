@@ -115,4 +115,40 @@ test("Compose", t => {
 
         st.end();
     });
+
+    t.test("Class instantiation support", st => {
+        let inst = new (Compose.extend({ init() { this.wasInitDone = true; } }));
+
+        ["init", "getFactory", "destroy", "onDestroy"].forEach(method => st.ok(inst[method], `has ${ method }`));
+
+        st.ok(inst.wasInitDone, "init() was called");
+
+        st.end();
+    });
+
+    t.test("Direct function call instantiation support", st => {
+        let inst = (Compose.extend({ init() { this.wasInitDone = true; } }))();
+
+        ["init", "getFactory", "destroy", "onDestroy"].forEach(method => st.ok(inst[method], `has ${ method }`));
+
+        st.ok(inst.wasInitDone, "init() was called");
+
+        st.end();
+    });
+
+    t.test("Support for ES6 Class extends", st => {
+        let SubCompose = class extends Compose {
+            init() {
+                super.init();
+                this.wasInitDone = true;
+            }
+        };
+        let inst = new SubCompose();
+
+        ["init", "getFactory", "destroy", "onDestroy"].forEach(method => st.ok(inst[method], `has ${ method }`));
+
+        st.ok(inst.wasInitDone, "init() was called");
+
+        st.end();
+    });
 });
