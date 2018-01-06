@@ -9,6 +9,7 @@
  *
  * @returns {Array<HTMLElement>}
  */
-export default function domFind(domEle, selector){
+export function domFind(domEle, selector){
     return Array.prototype.slice.call(domEle.querySelectorAll(selector));
 }
+export default domFind;

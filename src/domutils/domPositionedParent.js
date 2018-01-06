@@ -10,7 +10,7 @@ let ROOT            = document.documentElement;
  *
  * @return {HTMLElement}
  */
-function domPositionedParent(ele) {
+export function domPositionedParent(ele) {
     if (!ele) {
         return ROOT
     }

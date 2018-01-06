@@ -103,3 +103,4 @@ var parseParams = function parseParamsFn(str) {
 };
 
 export default parseParams;
+export { parseParams };

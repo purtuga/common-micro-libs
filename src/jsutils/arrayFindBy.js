@@ -7,7 +7,7 @@
  * @param {Boolean} [returnIndex]
  * @returns {*}
  */
-export default function arrayFindBy(arr, iterator, returnIndex) {
+export function arrayFindBy(arr, iterator, returnIndex) {
     let response;
 
     if (returnIndex) {
@@ -29,3 +29,4 @@ export default function arrayFindBy(arr, iterator, returnIndex) {
 
     return response;
 }
+export default arrayFindBy;

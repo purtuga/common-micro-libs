@@ -147,6 +147,4 @@ function destroy() {
 }
 
 export default Widget;
-
-
-
+export { Widget };

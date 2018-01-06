@@ -7,7 +7,7 @@
  *  IN case of a Promise.reject, the Error provided will have a property
  *  called `response` that holds the `Response` instance
  */
-export default function fetchCheckForHttpErrors(response) {
+export function fetchCheckForHttpErrors(response) {
     // If server returned an error code, then reject promise
     if (response.ok) {
         return response;
@@ -17,3 +17,4 @@ export default function fetchCheckForHttpErrors(response) {
     error.response = response;
     throw error;
 }
+export default fetchCheckForHttpErrors;

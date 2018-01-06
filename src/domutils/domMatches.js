@@ -9,7 +9,7 @@
  *
  * @return {Boolean}
  */
-export default function domMatches(el, selector) {
+export function domMatches(el, selector) {
     if (!el || !selector) {
         return false;
     }
@@ -22,3 +22,4 @@ export default function domMatches(el, selector) {
         el.oMatchesSelector
     ).call(el, selector);
 }
+export default domMatches;

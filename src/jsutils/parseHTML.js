@@ -23,7 +23,7 @@ var DOCUMENT = document;
  *  // myUI..childNodes[0] === <div>Something</div>
  *
  */
-export default function parseHTML(htmlString){
+export function parseHTML(htmlString){
     var
     fragment    = DOCUMENT.createDocumentFragment(),
     div         = DOCUMENT.createElement("div");
@@ -44,3 +44,4 @@ export default function parseHTML(htmlString){
 
     return fragment;
 }
+export default parseHTML;

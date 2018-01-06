@@ -47,3 +47,4 @@ var uuid = Object.create(/** @lends uuid */{
 });
 
 export default uuid;
+export { uuid };

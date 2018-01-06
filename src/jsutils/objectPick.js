@@ -7,7 +7,7 @@
  *
  * @returns {Object}
  */
-export default function objectPick(obj,...props) {
+export function objectPick(obj,...props) {
     // Yes, I could have used lodash.pick... but after I looked at its source,
     // the code seemed like it covers many more robust uses cases...I just need
     // to pick properties from a plain object.
@@ -27,3 +27,4 @@ export default function objectPick(obj,...props) {
         return result;
     }, {});
 }
+export default objectPick;

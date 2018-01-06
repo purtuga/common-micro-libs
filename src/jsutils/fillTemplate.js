@@ -17,7 +17,7 @@ import getObjectPropValue from "./getObjectPropValue";
  *
  * @return {String}
  */
-export default function fillTemplate(template, data) {
+export function fillTemplate(template, data) {
 
     var opt = {},
         i,j,x,y,item, tokenVal, tmp;
@@ -87,3 +87,4 @@ export default function fillTemplate(template, data) {
     return opt.response;
 }
 
+export default fillTemplate;

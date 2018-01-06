@@ -43,7 +43,7 @@ const isLeft    = /left/i;
  *  only window is supported)
  *
  */
-export default function domPosition(positionEle, anchorEle, options){
+export function domPosition(positionEle, anchorEle, options){
     var positionEleStyles   = positionEle.style;
     var anchorEleRect       = anchorEle.getBoundingClientRect();
     var positionEleRect     = positionEle.getBoundingClientRect();
@@ -114,6 +114,9 @@ export default function domPosition(positionEle, anchorEle, options){
     positionEleStyles.left = posLeft + PX;
     positionEleStyles.top  = posTop + PX;
 }
+
+export default domPosition;
+
 
 /**
  * returns the `scrollTop` and `scrollLeft` for a given element

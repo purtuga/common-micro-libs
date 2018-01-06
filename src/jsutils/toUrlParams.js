@@ -58,3 +58,4 @@ toUrlParams = function(paramObj, keyPrefix) {
 };
 
 export default toUrlParams;
+export { toUrlParams };

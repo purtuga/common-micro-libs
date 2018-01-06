@@ -335,3 +335,4 @@ EventEmitter.mixin = function (target) {
 };
 
 export default EventEmitter;
+export { EventEmitter };

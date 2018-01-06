@@ -15,7 +15,7 @@ const _toString     = Function.call.bind(Object.prototype.toString);
  *
  * @return {Object}
  */
-export default function objectExtend(mergeIntoObj, ...mergeObjects) {
+export function objectExtend(mergeIntoObj, ...mergeObjects) {
     let response    = mergeIntoObj || {};
     let total       = mergeObjects.length;
     let deepMerge   = false;
@@ -50,3 +50,4 @@ export default function objectExtend(mergeIntoObj, ...mergeObjects) {
     }
     return response;
 }
+export default objectExtend;

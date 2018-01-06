@@ -2,7 +2,7 @@
  * HTML and XML escaping routines
  * @namespace xmlEscape
  */
-var exports = /** @lends xmlEscape */{
+var xmlEscape = /** @lends xmlEscape */{
 
     /**
      * Escapes html code. Characters that are escaped include
@@ -64,4 +64,5 @@ var exports = /** @lends xmlEscape */{
 
 };
 
-export default exports;
+export default xmlEscape;
+export { xmlEscape };

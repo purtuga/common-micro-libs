@@ -489,5 +489,6 @@ fetchPolyfill.on = globalEvents.on.bind(globalEvents);
 fetchPolyfill();
 
 export default fetchPolyfill;
+export { fetchPolyfill };
 
 /* jshint ignore:end */

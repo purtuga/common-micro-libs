@@ -12,7 +12,7 @@ import domMatches from './domMatches'
  *
  * @return [Array]
  */
-export default function domChildren(ele, selector){
+export function domChildren(ele, selector){
     var children = Array.prototype.slice.call((ele.childNodes || []), 0).filter(function(childNode){
         return childNode.nodeType === 1;
     });
@@ -24,3 +24,4 @@ export default function domChildren(ele, selector){
     }
     return children;
 }
+export default domChildren;

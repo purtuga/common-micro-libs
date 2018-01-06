@@ -12,7 +12,7 @@ let queue;
  *
  * @param {Function} cb
  */
-export default function queueCallback(cb) {
+export function queueCallback(cb) {
     if ("function" === typeof cb) {
         callbacks.add(cb);
 
@@ -21,6 +21,7 @@ export default function queueCallback(cb) {
         }
     }
 }
+export default queueCallback;
 
 function flushQueue() {
     const cbList  = [...callbacks];

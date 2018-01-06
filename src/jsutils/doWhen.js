@@ -50,7 +50,7 @@ import objectExtend from "./objectExtend"
  *      future.abort();
  *
  */
-export default function doWhen(options) {
+export function doWhen(options) {
     let abort;
     let promise = new Promise(function(resolve, reject){
         let opt = objectExtend({},
@@ -116,3 +116,4 @@ export default function doWhen(options) {
 
     return promise;
 }
+export default doWhen;

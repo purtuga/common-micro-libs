@@ -1,14 +1,13 @@
 const path = require("path");
 const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
+const packageJson = require("./package.json");
 
 module.exports = {
-    entry: {
-        ObservableObject: "./src/jsutils/ObservableObject.js"
-    },
+    entry: "./src/index.js",
     output: {
-        library: "ObservableObject",
+        library: "microCommonLibs",
         libraryTarget: "umd",
-        filename: "[name].js",
+        filename: `${ packageJson.name }.js`,
         path: path.join(__dirname, "dist")
     },
     module: {
@@ -17,26 +16,44 @@ module.exports = {
                 test: /\.js$/,
                 exclude: /node_modules/,
                 loader: "babel-loader"
+            },
+            {
+                test: /\.less$/,
+                use: [
+                    "style-loader",
+                    "css-loader",
+                    "less-loader"
+                ]
             }
         ]
     },
+    devtool: "eval",
+    devServer: {
+        contentBase: [
+            "./dist",
+            "./dev"
+        ],
+        compress: true,
+        port: 10109,
+        openPage: "dev.html"
+    },
     plugins: [
-        new UglifyJSPlugin({
-            beautify: true,
-            mangle: false,
-            compress: {
-                warnings: false,
-                collapse_vars: false,
-                sequences: false,
-                // conditionals: false,
-                comparisons: false,
-                booleans: false,
-                //evaluate:       false,
-                hoist_funs: false,
-                join_vars: false,
-                if_return: false,
-                cascade: false
-            }
-        })
+        // new UglifyJSPlugin({
+        //     beautify: true,
+        //     mangle: false,
+        //     compress: {
+        //         warnings: false,
+        //         collapse_vars: false,
+        //         sequences: false,
+        //         // conditionals: false,
+        //         comparisons: false,
+        //         booleans: false,
+        //         //evaluate:       false,
+        //         hoist_funs: false,
+        //         join_vars: false,
+        //         if_return: false,
+        //         cascade: false
+        //     }
+        // })
     ]
 };

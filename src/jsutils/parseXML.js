@@ -39,3 +39,4 @@ var parseXML = function(data){
 };
 
 export default parseXML;
+export { parseXML };

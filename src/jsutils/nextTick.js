@@ -45,3 +45,4 @@ let nextTick = (function(){
 })();
 
 export default nextTick;
+export { nextTick };

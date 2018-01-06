@@ -69,7 +69,7 @@ function getNewMouseEvent(eventName, options){
  * @param {Object} [options]
  *
  */
-export default function domTriggerEvent(ele, eventName, options){
+export function domTriggerEvent(ele, eventName, options){
     if (!ele || !eventName) {
         return;
     }
@@ -91,3 +91,4 @@ export default function domTriggerEvent(ele, eventName, options){
 
     ele.dispatchEvent(evInstance);
 }
+export default domTriggerEvent;

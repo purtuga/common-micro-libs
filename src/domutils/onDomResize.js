@@ -26,11 +26,12 @@ const STYLE_BASE            = "position: absolute; top: 0; left: 0; z-index: -5;
  *
  * @returns {EventEmitter~EventListener}
  */
-export default function onDomResize (ele, callback, event = EV_RESIZE) {
+export function onDomResize (ele, callback, event = EV_RESIZE) {
     if (ele && callback) {
         return getEleMonitor(ele).on(event ,callback);
     }
 }
+export default onDomResize;
 
 /**
  * Returns an EventListener for the given DOM Element

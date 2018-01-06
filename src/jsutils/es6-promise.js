@@ -982,4 +982,5 @@ var polyfill;
     /* jshint ignore:end */
 }).call(this);
 
-export default polyfill.Promise;
+export const Promise = polyfill.Promise;
+export default Promise;

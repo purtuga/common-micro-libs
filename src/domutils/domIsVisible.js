@@ -7,6 +7,7 @@
  *
  * @return {Boolean}
  */
-export default function domIsVisible(el){
+export function domIsVisible(el){
     return !!( el.offsetWidth || el.offsetHeight || el.getClientRects().length );
 }
+export default domIsVisible;

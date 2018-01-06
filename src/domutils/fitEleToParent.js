@@ -18,7 +18,7 @@
  *  make an element inside of the `options.ele` to receive the fixed height
  *
  */
-export default function fitToParent(ele, offset, $adjustEle){
+export function fitToParent(ele, offset, $adjustEle){
     if ($adjustEle && !$adjustEle.parentElement) {
         return;
     }
@@ -39,5 +39,6 @@ export default function fitToParent(ele, offset, $adjustEle){
     $scrollEle.style.height = (
             $parent.clientHeight - (($ui.offsetHeight - $scrollEle.offsetHeight) + offset)
         ) + "px";
-};
+}
+export default fitToParent;
 

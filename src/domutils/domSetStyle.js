@@ -10,7 +10,7 @@
  *
  * domSetStyle(document.body, {"background-color", "yellow"});
  */
-export default function domSetStyle(el, styles){
+export function domSetStyle(el, styles){
     if (!el || typeof styles !== "object"){
         return;
     }
@@ -18,3 +18,4 @@ export default function domSetStyle(el, styles){
         el.style[prop] = styles[prop];
     });
 }
+export default domSetStyle;

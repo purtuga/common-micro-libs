@@ -7,6 +7,7 @@ const _GLOBAL = (() => {
     return Function('return this;')();
 })();
 
-export default function getGlobal() {
+export function getGlobal() {
     return _GLOBAL;
-};
+}
+export default getGlobal;

@@ -1,1 +1,1 @@
-export { ObservableObject as default } from "observable-data"
+export { ObservableObject, ObservableObject as default } from "observable-data"

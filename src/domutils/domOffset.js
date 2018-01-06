@@ -14,7 +14,7 @@ import domPositionedParent from "./domPositionedParent"
  *
  * @returns {{top: number, left: number}}
  */
-export default function domOffset(ele, fromOffsetParent) {
+export function domOffset(ele, fromOffsetParent) {
     // some of this was borrowed from jQuery.
 
     if ( !ele ) {
@@ -54,3 +54,4 @@ export default function domOffset(ele, fromOffsetParent) {
 
     return response;
 }
+export default domOffset;

@@ -680,3 +680,4 @@ var MapPolyfill = (function(){
 })();
 
 export default MapPolyfill;
+export { MapPolyfill };

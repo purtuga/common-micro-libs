@@ -76,3 +76,4 @@ var dataStore = /** @lends dataStore */{
 };
 
 export default dataStore;
+export { dataStore };

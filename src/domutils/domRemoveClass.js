@@ -6,6 +6,7 @@
  * @param {HTMLElement} el
  * @param {String} cssClass
  */
-export default function domRemoveClass(el, cssClass){
+export function domRemoveClass(el, cssClass){
     return el.classList.remove(cssClass);
 }
+export default domRemoveClass;

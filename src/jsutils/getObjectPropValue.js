@@ -12,7 +12,7 @@
  *  `name`, or `i18n.en-us.name`
  *
  */
-export default function getObjectPropValue(obj, prop){
+export function getObjectPropValue(obj, prop){
     if (!obj || !prop) {
         return;
     }
@@ -29,3 +29,4 @@ export default function getObjectPropValue(obj, prop){
 
     return obj;
 }
+export default getObjectPropValue;

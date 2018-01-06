@@ -357,4 +357,5 @@ DomKeyboardInteraction.defaults = {
     eleSelector:    ''
 };
 
+export { DomKeyboardInteraction };
 export default DomKeyboardInteraction;

@@ -8,9 +8,10 @@
  *
  * @return {Boolean}
  */
-export default function(el, cssClass){
+export function domHasClass(el, cssClass){
     if (el && cssClass) {
         return el.classList.contains(cssClass);
     }
     return false;
 }
+export default domHasClass;

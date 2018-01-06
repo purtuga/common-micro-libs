@@ -1,1 +1,2 @@
-export { ObservableArray as default } from "observable-data"
+export { ObservableArray, ObservableArray as default } from "observable-data"
+

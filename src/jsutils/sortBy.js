@@ -35,7 +35,7 @@ import getObjectPropValue from "./getObjectPropValue"
  * sortBy(arr, "title");
  * sortBy(arr, "profile.name");
  */
-export default function sortBy(arr, attr, dir = "asc"){
+export function sortBy(arr, attr, dir = "asc"){
     if (!Array.isArray(arr) || !attr) {
         return;
     }
@@ -62,3 +62,4 @@ export default function sortBy(arr, attr, dir = "asc"){
         return 0;
     });
 }
+export default sortBy;

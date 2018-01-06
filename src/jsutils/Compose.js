@@ -268,3 +268,4 @@ objectExtend(Compose.prototype, baseMethods);
 objectExtend(Compose, staticMethods);
 
 export default Compose;
+export { Compose };

@@ -16,7 +16,7 @@ var matches = body.matches                  ||
  *
  * @return {HTMLElement|undefined}
  */
-export default function domClosest(ele, selector){
+export function domClosest(ele, selector){
     var parent = ele;
     var response;
 
@@ -31,4 +31,4 @@ export default function domClosest(ele, selector){
 
     return response;
 }
-
+export default domClosest;

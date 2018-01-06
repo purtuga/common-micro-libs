@@ -19,7 +19,7 @@
  * ...
  * listener.remove();
  */
-export default function domAddEventListener(ele, event, callback, capture) {
+export function domAddEventListener(ele, event, callback, capture) {
     let events      = event.split(/\s+/);
     let evListeners = {};
 
@@ -47,3 +47,4 @@ export default function domAddEventListener(ele, event, callback, capture) {
         }
     });
 }
+export default domAddEventListener;

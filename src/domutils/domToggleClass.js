@@ -6,8 +6,9 @@
  * @param {HTMLElement} el
  * @param {String} cssClass
  */
-export default function domToggleClass(el, cssClass){
+export function domToggleClass(el, cssClass){
     if (el) {
         return el.classList.toggle(cssClass);
     }
 }
+export default domToggleClass;

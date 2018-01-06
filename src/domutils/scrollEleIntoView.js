@@ -10,7 +10,7 @@
  * @param {HTMLElement} ele
  * @param {HTMLElement} scrollingParent
  */
-export default function scrollEleIntoView(ele, scrollingParent){
+export function scrollEleIntoView(ele, scrollingParent){
     if (!ele || !scrollingParent || !scrollingParent.contains(ele)) {
         return;
     }
@@ -28,3 +28,4 @@ export default function scrollEleIntoView(ele, scrollingParent){
         scrollingParent.scrollTop = (parentScrollTop + eleClientRect.top) - parentClientRect.top - parentHeight + eleHeight;
     }
 }
+export default scrollEleIntoView;

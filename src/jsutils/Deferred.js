@@ -1,6 +1,6 @@
 import Promise from "./es6-promise"
 
-export default Object.create({
+export const Deferred = Object.create({
     /**
      * Creates a `Deferred` object which is essentially an un-resolved promise
      * that, in addition to the normal Promise interface, also exposes a `resolve`
@@ -42,3 +42,4 @@ export default Object.create({
         return deferred;
     }
 });
+export default Deferred;

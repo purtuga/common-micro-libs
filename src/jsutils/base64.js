@@ -144,6 +144,7 @@ base64 = /** @lends base64 */{
     atob: atob
 };
 
+export {base64};
 export default base64;
 
 /* jshint ignore:end */
