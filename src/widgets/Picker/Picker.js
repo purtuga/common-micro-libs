@@ -243,3 +243,4 @@ Picker.defaults = {
 };
 
 export default Picker;
+export { Picker };

@@ -36,3 +36,4 @@ const Loader = Widget.extend(/** @lends Loader.prototype */{
 Loader.defaults = {};
 
 export default Loader;
+export {Loader};

@@ -4,7 +4,7 @@ import dataStore from "./dataStore"
 //=================================================================
 const PRIVATE = dataStore.create();
 
-class Component extends HTMLElement {
+export class Component extends HTMLElement {
     emit(eventName, data) {
         this.dispatchEvent(new CustomEvent(eventName, { detail: data }));
     }
@@ -17,10 +17,11 @@ class Component extends HTMLElement {
         getInstanceState(this).destroyCallbacks.push(callback);
     }
 }
+export default Component;
 
 function getInstanceState(instance) {
     if (!PRIVATE.has(instance)) {
-        PRIVATE.set(this, {
+        PRIVATE.set(instance, {
             destroyCallbacks: []
         });
     }

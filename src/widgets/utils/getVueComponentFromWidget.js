@@ -123,3 +123,4 @@ function getVueComponentFromWidget(
 }
 
 export default getVueComponentFromWidget;
+export { getVueComponentFromWidget };

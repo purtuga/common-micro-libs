@@ -71,3 +71,4 @@ UIBlock.defaults = {
 };
 
 export default UIBlock;
+export { UIBlock };

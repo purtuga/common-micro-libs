@@ -161,3 +161,4 @@ Popup.defaults = {
 };
 
 export default Popup;
+export { Popup };

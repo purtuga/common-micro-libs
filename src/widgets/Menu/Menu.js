@@ -132,4 +132,4 @@ Menu.defaults = {
 };
 
 export default Menu;
-
+export { Menu };

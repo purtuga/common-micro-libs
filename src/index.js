@@ -53,4 +53,11 @@ export * from "./jsutils/Widget.js"
 export * from "./jsutils/xmlEscape.js"
 
 // ------------------------------------------------- WIDGETS
-
+export * from "./widgets/utils/getVueComponentFromWidget.js"
+export * from "./widgets/utils/getCustomElementFromWidget.js"
+export * from "./widgets/UIBlock/UIBlock.js"
+export * from "./widgets/Popup/Popup.js"
+export * from "./widgets/Picker/Picker.js"
+export * from "./widgets/Menu/Menu.js"
+export * from "./widgets/Loader/Loader.js"
+export * from "./widgets/Loader/LoaderCE.js"

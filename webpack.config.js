@@ -5,7 +5,7 @@ const packageJson = require("./package.json");
 module.exports = {
     entry: "./src/index.js",
     output: {
-        library: "microCommonLibs",
+        library: "commonMicroLibs",
         libraryTarget: "umd",
         filename: `${ packageJson.name }.js`,
         path: path.join(__dirname, "dist")
@@ -23,6 +23,21 @@ module.exports = {
                     "style-loader",
                     "css-loader",
                     "less-loader"
+                ]
+            },
+            {
+                test:   /\.html$/,
+                use:    ["raw-loader"]
+            },
+            {
+                test:   /\.(eot|ttf|svg|woff|png|gif)(\?.*)?$/,
+                use:    [
+                    {
+                        loader: 'url-loader',
+                        options: {
+                            limit: 150000
+                        }
+                    }
                 ]
             }
         ]

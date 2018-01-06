@@ -21,7 +21,7 @@ export function getCustomElementFromWidget({ Widget }) {
         }
 
         disconnectedCallback() {
-
+            this.destroy();
         }
     }
 }

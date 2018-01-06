@@ -1,5 +1,10 @@
 {
     "presets": [
         ["env", { "modules": false }]
+    ],
+    "plugins": [
+        ["babel-plugin-transform-builtin-classes", {
+            "globals": ["Array", "Error", "HTMLElement"]
+        }]
     ]
 }
