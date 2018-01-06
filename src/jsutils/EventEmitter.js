@@ -225,6 +225,7 @@ const EventEmitter = Compose.extend(/** @lends EventEmitter.prototype */{
      *
      * @param {EventEmitter} pipeTo
      *  The EventEmitter instance object to where events should be piped.
+     *  Can also be an object/class having an `emit(evName, data)` method.
      *
      * @param {String} [prefix]
      *  If defined, prefix will be added to any event emited. Example:
@@ -239,7 +240,7 @@ const EventEmitter = Compose.extend(/** @lends EventEmitter.prototype */{
      *  @return {EventListener}
      */
     pipe: function(pipeTo, prefix, includeInstance){
-        if (!pipeTo || !pipeTo.on) {
+        if (!pipeTo || !pipeTo.emit) {
             return { off: function(){} };
         }
 

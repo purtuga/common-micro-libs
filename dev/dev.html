@@ -3,9 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <title>DEV</title>
+    <script>
+        if (!('customElements' in window)) {
+            document.write('<' + 'script src="//cdnjs.cloudflare.com/ajax/libs/document-register-element/1.5.0/document-register-element.js"></' + 'script>');
+            console.log("CE pollyfill requested");
+        }
+    </script>
 </head>
 <body>
     <h1>Dev</h1>
+    <script src="DomDataBind.js"></script>
     <script src="common-micro-libs.js"></script>
     <script src="ComponentTesting.js"></script>
 </body>
