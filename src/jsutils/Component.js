@@ -16,6 +16,29 @@ export class Component extends HTMLElement {
      */
     init() {}
 
+    connectedCallback() {
+        // Cancel destroy if it is queued
+        if (PRIVATE.has(this)) {
+            const state = getInstanceState(this);
+            if (state.destroyQueued) {
+                clearTimeout(state.destroyQueued);
+                state.destroyQueued = null;
+            }
+        }
+    }
+
+    disconnectedCallback() {
+        // Delay calling .destroy() by 60s, just in case user re-attaches component back to dom.
+        // This seems to be currently the only way to ensure attached `onDestroy` logic run when
+        // the element is no longer needed.
+        if (PRIVATE.has(this)) {
+            const state = getInstanceState(this);
+            if (!state.destroyQueued) {
+                state.destroyQueued = setTimeout(this.destroy.bind(this), 60000);
+            }
+        }
+    }
+
     /**
      * Registers the component on the page with the given name (html tagName).
      * Shortcut to `customElements.define()` method of `CustomElementRegistry`
@@ -40,7 +63,15 @@ export class Component extends HTMLElement {
      * Destroy the instance of the widget
      */
     destroy() {
-        getInstanceState(this).destroyCallbacks.splice(0).forEach(cb => cb());
+        if (PRIVATE.has(this)) {
+            const state = getInstanceState(this);
+            if (state.destroyQueued) {
+                clearTimeout(state.destroyQueued);
+                state.destroyQueued = null;
+            }
+            state.destroyCallbacks.splice(0).forEach(cb => cb());
+            PRIVATE.delete(this);
+        }
     }
 
     /**
@@ -56,7 +87,8 @@ export default Component;
 function getInstanceState(instance) {
     if (!PRIVATE.has(instance)) {
         PRIVATE.set(instance, {
-            destroyCallbacks: []
+            destroyCallbacks: [],
+            destroyQueued: null
         });
     }
     return PRIVATE.get(instance);

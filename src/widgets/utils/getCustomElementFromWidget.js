@@ -1,8 +1,11 @@
 import Component    from "../../jsutils/Component"
+import dataStore    from "../../jsutils/dataStore"
 import domAddClass  from "../../domutils/domAddClass"
 
 //==============================================================
 const objectKeys = Object.keys;
+const PRIVATE = dataStore.create();
+
 
 /**
  * Returns a Custom Element for the given Widget constructor provided on input.
@@ -26,24 +29,28 @@ const objectKeys = Object.keys;
 export function getCustomElementFromWidget({ Widget, className, liveProps }) {
     const WidgetComponent = class extends Component {
         connectedCallback() {
-            const wdg = this.wdg = new Widget(getWidgetOptionsFromComponent(Widget, this));
-            this.appendChild(wdg.getEle());
+            super.connectedCallback();
 
-            if (className) {
-                domAddClass(this, className);
+            if (!PRIVATE.has(this)) {
+                const state = {};
+                const wdg = this.wdg = new Widget(getWidgetOptionsFromComponent(Widget, this));
+
+                PRIVATE.set(this, state);
+                this.appendChild(wdg.getEle());
+
+                if (className) {
+                    domAddClass(this, className);
+                }
+
+                if (wdg.pipe) {
+                    wdg.onDestroy(wdg.pipe(this).off);
+                }
+
+                this.onDestroy(() => {
+                    wdg.destroy();
+                    PRIVATE.delete(this);
+                });
             }
-
-            if (wdg.pipe) {
-                wdg.onDestroy(wdg.pipe(this).off);
-            }
-
-            this.onDestroy(() => {
-                wdg.destroy();
-            });
-        }
-
-        disconnectedCallback() {
-            this.destroy();
         }
     };
 
