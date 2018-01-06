@@ -9,6 +9,8 @@ const PRIVATE = dataStore.create();
 
 /**
  * Returns a Custom Element for the given Widget constructor provided on input.
+ * Each component defined (HTMLElement) will have a property named `wdg` that
+ * holds the Widget's instance (Note: this could be `null` if the CE was disconnected).
  *
  * @param {Object} options
  * @param {Widget} options.Widget
@@ -49,6 +51,7 @@ export function getCustomElementFromWidget({ Widget, className, liveProps }) {
                 this.onDestroy(() => {
                     wdg.destroy();
                     PRIVATE.delete(this);
+                    this.wdg = null;
                 });
             }
         }

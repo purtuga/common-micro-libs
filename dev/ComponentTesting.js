@@ -3,13 +3,15 @@
     const DomDataBind = window.DomDataBind.default;
     const {
         LoaderCE,
-        MenuCE
+        MenuCE,
+        PickerCE
     } = commonMicroLibs;
     const $out = window.$ce_out = document.createElement("div");
     document.body.appendChild($out);
 
     LoaderCE.registerAs("cml-loader");
     MenuCE.registerAs("cml-menu");
+    PickerCE.registerAs("cml-picker");
 
     $out.innerHTML = `
 <h2>Components</h2>
@@ -20,6 +22,12 @@
 
 <hr/>
 <h3>Picker</h3>
+<cml-picker 
+    _prop.choices="picker.choices" 
+    _prop.selected="picker.selected"
+    _on.item-selected="console.log('item selected: ' + $ev.target.textContent)"
+    _on.selection-cleared="console.log('selected cleard!')"
+    style="width: 30em;"></cml-picker>
 
 <hr/>
 <h3>Menu</h3>
@@ -40,6 +48,14 @@
             onItemClick() {
                 console.log("menu item was clicked");
             }
+        },
+        picker: {
+            choices: [
+                { title: "pick 1" },
+                { title: "pick 2" },
+                { title: "pick 3" }
+            ],
+            selected: "pick 3"
         }
     };
     const binder = DomDataBind.create($out, data);
