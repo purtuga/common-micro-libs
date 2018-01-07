@@ -11,6 +11,27 @@ export class Component extends HTMLElement {
     // Taken from: https://github.com/WebReflection/document-register-element#skipping-the-caveat-through-extends
     constructor(_) { return (_ = super(_)).init(), _; }
 
+    //==============================================================[    STATIC MEMBERS     ]
+
+    /**
+     * The tag name to be used in registering the Component on the page. This will be the default
+     * value used in `registerAs` if input is not provided to that method
+     * @type {String}
+     */
+    static get tagName() { return ""; }
+
+    /**
+     * Helper method that registers the component on the page with the given name (html tagName).
+     * Shortcut to `customElements.define()` method of `CustomElementRegistry`.
+     *
+     * @param {String} [name=this.tagName]
+     */
+    static register(name) {
+        registerCustomElementAs(this, name || this.tagName);
+    }
+
+    //==============================================================[    INSTANCE MEMBERS     ]
+
     /**
      * Run initialization logic
      */
@@ -37,16 +58,6 @@ export class Component extends HTMLElement {
                 state.destroyQueued = setTimeout(this.destroy.bind(this), 60000);
             }
         }
-    }
-
-    /**
-     * Registers the component on the page with the given name (html tagName).
-     * Shortcut to `customElements.define()` method of `CustomElementRegistry`
-     *
-     * @param {String} name
-     */
-    static registerAs(name) {
-        registerCustomElementAs(this, name);
     }
 
     /**

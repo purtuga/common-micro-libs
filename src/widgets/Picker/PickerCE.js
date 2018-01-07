@@ -3,6 +3,7 @@ import Picker from "./Picker"
 
 export const PickerCE = getCustomElementFromWidget({
     Widget: Picker,
+    tagName: "cml-picker",
     className: "Picker-CE",
     liveProps: {
         choices(newValue, pickerWdg) {

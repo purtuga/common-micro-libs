@@ -3,6 +3,7 @@ import Menu from "./Menu"
 
 export const MenuCE = getCustomElementFromWidget({
     Widget: Menu,
+    tagName: "cml-menu",
     className: "my-menu-CE",
     liveProps: {
         items(newItems) {

@@ -17,7 +17,10 @@ const PRIVATE = dataStore.create();
  *  The Widget Class.
  *
  * @param {String} options.className
- *  The class name(s) that should be auto-applied to the Customer Element
+ *  The CSS class name(s) that should be auto-applied to the Customer Element
+ *
+ * @param {String} [options.tagName=""]
+ *  The HTML custom tag name to use for the return Component `register` method.
  *
  * @param {Object} [options.liveProps]
  *  An object with the propName whose value is a callback for when the prop
@@ -28,14 +31,27 @@ const PRIVATE = dataStore.create();
  *
  * @return {HTMLElement}
  */
-export function getCustomElementFromWidget({ Widget, className, liveProps }) {
+export function getCustomElementFromWidget({ Widget, className, liveProps, tagName }) {
     const WidgetComponent = class extends Component {
+        static get tagName() { return tagName || "" }
+
+        init() {
+            if (!PRIVATE.has(this)) {
+                this.innerHTML = "";
+            }
+        }
+
         connectedCallback() {
+            // ON connect, which can happen multiple times, we check if the widget is already
+            // created.
+            // If not, we initialize it and attache it to the CE
+            // IF already defined, then ensure it is visible. During disconnects we hide the widget,
+            // which helps when a user might `cloneNode` on a CE that is NOT using shadowDOM
             super.connectedCallback();
 
             if (!PRIVATE.has(this)) {
                 this.textContent = ""; // we don't want any prior content of this element
-                const state = {};
+                const state = { pendingDestroy: false, cssDisplay: "" };
                 const wdg = this.wdg = new Widget(getWidgetOptionsFromComponent(Widget, this));
 
                 PRIVATE.set(this, state);
@@ -54,6 +70,26 @@ export function getCustomElementFromWidget({ Widget, className, liveProps }) {
                     PRIVATE.delete(this);
                     this.wdg = null;
                 });
+            }
+            else {
+                const state = PRIVATE.get(this);
+                if (state.pendingDestroy) {
+                    state.pendingDestroy = false;
+                    this.wdg.getEle().style.display = state.cssDisplay;
+                    state.cssDisplay = ""
+                }
+            }
+        }
+
+        disconnectedCallback() {
+            super.disconnectedCallback();
+            if (PRIVATE.has(this) && this.wdg) {
+                const state = PRIVATE.get(this);
+                if (!state.pendingDestroy) {
+                    state.pendingDestroy = true;
+                    state.cssDisplay = this.wdg.getEle().style.display;
+                    this.wdg.getEle().style.display = "none";
+                }
             }
         }
     };
@@ -85,9 +121,8 @@ function getWidgetOptionsFromComponent(Widget, componentInstance) {
         if (key in componentInstance && componentInstance[key] !== Widget.defaults[key]) {
             widgetOptions[key] = componentInstance[key];
         }
-
         // if set as an attribute on the component, then use that value
-        if (componentInstance.hasAttribute(key)) {
+        else if (componentInstance.hasAttribute(key)) {
             widgetOptions[key] = componentInstance.getAttribute(key);
         }
     });

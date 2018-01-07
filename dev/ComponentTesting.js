@@ -7,11 +7,10 @@
         PickerCE
     } = commonMicroLibs;
     const $out = window.$ce_out = document.createElement("div");
-    document.body.appendChild($out);
 
-    LoaderCE.registerAs("cml-loader");
-    MenuCE.registerAs("cml-menu");
-    PickerCE.registerAs("cml-picker");
+    LoaderCE.register();
+    MenuCE.register();
+    PickerCE.register();
 
     $out.innerHTML = `
 <h2>Components</h2>
@@ -59,4 +58,5 @@
         }
     };
     const binder = DomDataBind.create($out, data);
+    document.body.appendChild($out);
 })();
