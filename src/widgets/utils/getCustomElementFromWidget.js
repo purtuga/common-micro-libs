@@ -34,6 +34,7 @@ export function getCustomElementFromWidget({ Widget, className, liveProps }) {
             super.connectedCallback();
 
             if (!PRIVATE.has(this)) {
+                this.textContent = ""; // we don't want any prior content of this element
                 const state = {};
                 const wdg = this.wdg = new Widget(getWidgetOptionsFromComponent(Widget, this));
 
