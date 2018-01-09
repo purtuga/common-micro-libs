@@ -22,6 +22,11 @@ const PRIVATE = dataStore.create();
  * @param {String} [options.tagName=""]
  *  The HTML custom tag name to use for the return Component `register` method.
  *
+ * @param {Object} [options.liveAttr]
+ *  An object with the HTML attributes that will be monitored for changes.
+ *  The callback will be executed when the prop changes with the new value, old value,
+ *  widget instance and Component (ex. `callback(new, old, wdg, component)`.
+ *
  * @param {Object} [options.liveProps]
  *  An object with the propName whose value is a callback for when the prop
  *  changes on the instance.
@@ -31,13 +36,22 @@ const PRIVATE = dataStore.create();
  *
  * @return {HTMLElement}
  */
-export function getCustomElementFromWidget({ Widget, className, liveProps, tagName }) {
+export function getCustomElementFromWidget({ Widget, className, liveProps, tagName, liveAttr = {} }) {
+    const liveAttributes = Object.keys(liveAttr);
+
     const WidgetComponent = class extends Component {
         static get tagName() { return tagName || "" }
+        static get observedAttributes() { return liveAttributes; }
 
         init() {
             if (!PRIVATE.has(this)) {
                 this.innerHTML = "";
+            }
+        }
+
+        attributeChangedCallback(name, oldValue, newValue) {
+            if (liveAttr[name]) {
+                liveAttr[name](newValue, oldValue, this.wdg, this);
             }
         }
 
@@ -113,7 +127,16 @@ export function getCustomElementFromWidget({ Widget, className, liveProps, tagNa
 
 export default getCustomElementFromWidget;
 
-function getWidgetOptionsFromComponent(Widget, componentInstance) {
+/**
+ * Given a Widget Constructor (class) and a component instance, this method will return
+ * an object with the options for the given widget.
+ *
+ * @param {Widget} Widget
+ * @param {HTMLElement} componentInstance
+ *
+ * @returns {Object}
+ */
+export function getWidgetOptionsFromComponent(Widget, componentInstance) {
     const widgetOptions = {};
 
     objectKeys(Widget.defaults).forEach(key => {
