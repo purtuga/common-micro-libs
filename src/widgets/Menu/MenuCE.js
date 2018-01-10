@@ -6,8 +6,10 @@ export const MenuCE = getCustomElementFromWidget({
     tagName: "cml-menu",
     className: "my-menu-CE",
     liveProps: {
-        items(newItems) {
-            this.wdg.setItems(newItems);
+        items(newItems, wdg) {
+            if (wdg) {
+                this.wdg.setItems(newItems);
+            }
         }
     }
 });

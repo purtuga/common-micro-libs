@@ -7,11 +7,15 @@ export const PickerCE = getCustomElementFromWidget({
     className: "Picker-CE",
     liveProps: {
         choices(newValue, pickerWdg) {
-            pickerWdg.setChoices(newValue);
+            if (pickerWdg) {
+                pickerWdg.setChoices(newValue);
+            }
         },
 
         selected(newValue, pickerWdg) {
-            pickerWdg.setSelected(newValue);
+            if (pickerWdg) {
+                pickerWdg.setSelected(newValue);
+            }
         }
     }
 });

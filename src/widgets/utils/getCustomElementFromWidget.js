@@ -115,7 +115,9 @@ export function getCustomElementFromWidget({ Widget, className, liveProps, tagNa
                 get() { return propValue; },
                 set(newValue) {
                     propValue = newValue;
-                    liveProps[propName].call(this, newValue, this.wdg, this);
+                    if (this.wdg) {
+                        liveProps[propName].call(this, newValue, this.wdg, this);
+                    }
                 }
             };
             return props;

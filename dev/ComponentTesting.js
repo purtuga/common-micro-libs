@@ -25,15 +25,12 @@
     _prop.choices="picker.choices" 
     _prop.selected="picker.selected"
     _on.item-selected="console.log('item selected: ' + $ev.target.textContent)"
-    _on.selection-cleared="console.log('selected cleard!')"
+    _on.selection-cleared="console.log('selected cleared!')"
     style="width: 30em;"></cml-picker>
 
 <hr/>
 <h3>Menu</h3>
 <cml-menu _on.item-click="menu.onItemClick" _prop.items="menu.menuItems"></cml-menu>
-
-<hr/>
-<h3>Popup</h3>
 
 `;
 
