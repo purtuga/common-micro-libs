@@ -76,12 +76,15 @@ const baseMethods = /** @lends Compose.prototype */{
      *
      * @return {Compose}
      */
-    getFactory(){} // set by .extend()
+    getFactory(){
+        if (this.constructor) {
+            return this.constructor;
+        }
+    }
 };
 
 
 const staticMethods = /** @lends Compose */{
-
     /**
      * Creates an new factory based on the prototye of the current Factory
      * and any other Factory given on input.
@@ -89,9 +92,9 @@ const staticMethods = /** @lends Compose */{
      * @return {Compose}
      */
     extend: function(...args){
-        let Factory = getNewConstructor();
+        let Class = class extends this {};
 
-        Factory.prototype = args.reduce(function(newProto, obj){
+        objectExtend(Class.prototype, args.reduce(function(newProto, obj){
             if (obj) {
                 const thisObjProto = (obj.prototype || obj);
                 objectKeys(thisObjProto).forEach(function(objKey){
@@ -99,18 +102,9 @@ const staticMethods = /** @lends Compose */{
                 });
             }
             return newProto;
-        }, objectCreate(this.prototype));
+        }, {}));
 
-        // Add a method to the Factory prototype that allows retrieval of
-        // factory static properties.
-        Factory.prototype.getFactory = function(){
-            return Factory;
-        };
-
-        Factory.prototype.constructor = Factory;
-
-        // Extend new factory with statics from this factory
-        return objectExtend(true, Factory, this);
+        return Class;
     },
 
     /**
