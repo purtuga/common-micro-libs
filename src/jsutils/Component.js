@@ -5,13 +5,23 @@ import dataStore from "./dataStore"
 const PRIVATE = dataStore.create();
 
 /**
- * An html component - a Custom Element.
+ * A Widget defined as an html Custom Element.
+ *
+ * @extends HTMLElement
  */
 export class Component extends HTMLElement {
     // Taken from: https://github.com/WebReflection/document-register-element#skipping-the-caveat-through-extends
     constructor(_) { return (_ = super(_)).init(), _; }
 
     //==============================================================[    STATIC MEMBERS     ]
+
+    /**
+     * Returns the number of milliseconds to delay calling the `destroy` method after the
+     * element is removed from DOM.
+     *
+     * @returns {number}
+     */
+    static get autoDestroyDelay() { return 60000; }
 
     /**
      * The tag name to be used in registering the Component on the page. This will be the default
@@ -55,7 +65,7 @@ export class Component extends HTMLElement {
         if (PRIVATE.has(this)) {
             const state = getInstanceState(this);
             if (!state.destroyQueued) {
-                state.destroyQueued = setTimeout(this.destroy.bind(this), 60000);
+                state.destroyQueued = setTimeout(this.destroy.bind(this), this.constructor.autoDestroyDelay);
             }
         }
     }
@@ -76,12 +86,12 @@ export class Component extends HTMLElement {
     destroy() {
         if (PRIVATE.has(this)) {
             const state = getInstanceState(this);
+            PRIVATE.delete(this);
             if (state.destroyQueued) {
                 clearTimeout(state.destroyQueued);
                 state.destroyQueued = null;
             }
             state.destroyCallbacks.splice(0).forEach(cb => cb());
-            PRIVATE.delete(this);
         }
     }
 
@@ -98,6 +108,8 @@ export default Component;
 function getInstanceState(instance) {
     if (!PRIVATE.has(instance)) {
         PRIVATE.set(instance, {
+            props: {},
+            attrs: {},
             destroyCallbacks: [],
             destroyQueued: null
         });

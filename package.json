@@ -6,7 +6,7 @@
   "scripts": {
     "test": "tape test/**/*.js | faucet",
     "watch": "npm-watch",
-    "start": "webpack-dev-server --open"
+    "start": "webpack-dev-server --open --entry ./dev/index.js"
   },
   "watch": {
     "test": "{src,test}/**/*.js"
