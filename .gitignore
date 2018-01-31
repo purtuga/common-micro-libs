@@ -39,3 +39,6 @@ _SpecRunner.html
 .grunt*
 .idea*
 .esm-cache
+
+dev/*
+dev
