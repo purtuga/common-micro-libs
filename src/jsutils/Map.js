@@ -2,7 +2,9 @@ import getGlobal from "./getGlobal"
 import { FakeIterator } from "./Iterator"
 import {
     arrayIndexOf,
-    arraySplice
+    arraySplice,
+    objectDefineProperty,
+    objectDefineProperties
 } from "./runtime-aliases"
 
 //======================================================
@@ -14,11 +16,11 @@ export function FakeMap() {
     // FIXME: support for iterable input param
 }
 
-Object.defineProperties(FakeMap.prototype, {
+objectDefineProperties(FakeMap.prototype, {
     constructor: { value: FakeMap, configurable: true },
     _: {
         get() {
-            Object.defineProperty(this, "_", { value: {
+            objectDefineProperty(this, "_", { value: {
                 keys: [],
                 values: []
             } });
