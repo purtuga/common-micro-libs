@@ -1,5 +1,5 @@
 
-const _GLOBAL = (() => {
+export const GLOBAL = (() => {
     /* global self, window, global */
     if (typeof window !== 'undefined') { return window; }
     if (typeof global !== 'undefined') { return global; }
@@ -8,6 +8,6 @@ const _GLOBAL = (() => {
 })();
 
 export function getGlobal() {
-    return _GLOBAL;
+    return GLOBAL;
 }
 export default getGlobal;

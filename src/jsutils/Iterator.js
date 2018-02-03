@@ -4,7 +4,7 @@ import {
 } from "./runtime-aliases"
 
 //-----------------------------------------------------------------------
-const $iterator$ = Symbol && Symbol.iterator ? Symbol.iterator : "@@iterator";
+const $iterator$ = "undefined" !== typeof Symbol && Symbol.iterator ? Symbol.iterator : "@@iterator";
 
 // Great reference: http://2ality.com/2015/02/es6-iteration.html
 export function FakeIterator(keys, values) {
