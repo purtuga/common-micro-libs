@@ -1,2 +1,1 @@
-export const Set = require("core-js/fn/set");
-export default Set;
+export { Set } from "./Set"

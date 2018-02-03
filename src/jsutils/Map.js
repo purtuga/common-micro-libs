@@ -9,7 +9,7 @@ import {
 
 //======================================================
 
-const Map = getGlobal().Map || FakeMap;
+export const Map = getGlobal().Map || FakeMap;
 export default Map;
 
 export function FakeMap() {
