@@ -2,7 +2,7 @@ require         = require('@std/esm')(module, { cjs: true, esm: 'js' });
 const test      = require("tape");
 const Compose   = require("../src/jsutils/Compose").default;
 const delay     = ms => new Promise(resolve => setTimeout(resolve, ms || 0));
-const consoleLog    = console.log.bind(console)
+const consoleLog    = console.log.bind(console);
 
 test("Compose", t => {
     t.test("Static Methods", st => {
@@ -126,15 +126,15 @@ test("Compose", t => {
         st.end();
     });
 
-    t.test("Direct function call instantiation support", st => {
-        let inst = (Compose.extend({ init() { this.wasInitDone = true; } }))();
-
-        ["init", "getFactory", "destroy", "onDestroy"].forEach(method => st.ok(inst[method], `has ${ method }`));
-
-        st.ok(inst.wasInitDone, "init() was called");
-
-        st.end();
-    });
+    // t.test("Direct function call instantiation support", st => {
+    //     let inst = (Compose.extend({ init() { this.wasInitDone = true; } }))();
+    //
+    //     ["init", "getFactory", "destroy", "onDestroy"].forEach(method => st.ok(inst[method], `has ${ method }`));
+    //
+    //     st.ok(inst.wasInitDone, "init() was called");
+    //
+    //     st.end();
+    // });
 
     t.test("Support for ES6 Class extends", st => {
         let SubCompose = class extends Compose {

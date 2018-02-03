@@ -1,1 +1,1 @@
-export { Map } from "./Map"
+export { Map, FakeMap, Map as default } from "./Map"

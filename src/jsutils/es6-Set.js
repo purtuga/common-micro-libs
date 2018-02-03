@@ -1,1 +1,1 @@
-export { Set } from "./Set"
+export { Set, FakeSet, Set as default } from "./Set"
