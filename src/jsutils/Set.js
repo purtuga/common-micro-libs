@@ -19,8 +19,9 @@ objectDefineProperties(FakeSet.prototype, {
     constructor: { value: FakeSet, configurable: true },
     _: {
         get() {
-            objectDefineProperty(this, "_", { value: [] });
-            return this._;
+            const values = [];
+            objectDefineProperty(this, "_", { value: values });
+            return values;
         }
     },
     add: {
