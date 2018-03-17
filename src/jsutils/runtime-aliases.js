@@ -2,7 +2,7 @@
 // Function
     // functionBind(fn, fnParent)
 export const functionBind       = Function.bind.call.bind(Function.bind);
-    // functionBindCall(Array.prototype.forEach)
+    // usage: functionBindCall(Array.prototype.forEach) // generates a bound function to Array.prototype.forEach.call
 export const functionBindCall   = functionBind(Function.call.bind, Function.call);
 
 // Object
