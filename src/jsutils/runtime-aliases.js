@@ -21,3 +21,6 @@ export const arraySplice    = functionBindCall(arr.splice);
 // Logging
 export const consoleLog = console.log;
 export const consoleError = console.error || consoleLog;
+
+// Iterators
+export const SymbolIterator = "undefined" !== typeof Symbol && Symbol.iterator ? Symbol.iterator : "@@iterator";

@@ -1,10 +1,10 @@
 import {
     objectDefineProperty,
-    objectDefineProperties
+    objectDefineProperties,
+    SymbolIterator
 } from "./runtime-aliases"
 
 //-----------------------------------------------------------------------
-const $iterator$ = "undefined" !== typeof Symbol && Symbol.iterator ? Symbol.iterator : "@@iterator";
 
 // Great reference: http://2ality.com/2015/02/es6-iteration.html
 export function FakeIterator(keys, values) {
@@ -44,5 +44,5 @@ objectDefineProperties(FakeIterator.prototype, {
         }
     }
 });
-objectDefineProperty(FakeIterator.prototype, $iterator$, { value(){ return this; } });
+objectDefineProperty(FakeIterator.prototype, SymbolIterator, { value(){ return this; } });
 

@@ -1,14 +1,15 @@
-import getGlobal from "./getGlobal"
+import { GLOBAL } from "./getGlobal"
 import { FakeIterator } from "./Iterator"
 import {
     objectDefineProperties,
     objectDefineProperty,
-    arrayIndexOf
+    arrayIndexOf,
+    SymbolIterator
 } from "./runtime-aliases"
 
 //============================================================
 
-export const Set = getGlobal().Set || FakeSet;
+export const Set = GLOBAL.Set && GLOBAL.Set.prototype[SymbolIterator] ? GLOBAL.Set : FakeSet;
 export default Set;
 
 export function FakeSet() {
@@ -65,5 +66,12 @@ objectDefineProperties(FakeSet.prototype, {
         value(cb) {
             this._.forEach(item => cb(item, item, this));
         }
+    },
+    [SymbolIterator]: {
+        value() {
+            return this.values();
+        }
     }
 });
+
+

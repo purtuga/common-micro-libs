@@ -1,15 +1,16 @@
-import getGlobal from "./getGlobal"
+import { GLOBAL } from "./getGlobal"
 import { FakeIterator } from "./Iterator"
 import {
     arrayIndexOf,
     arraySplice,
     objectDefineProperty,
-    objectDefineProperties
+    objectDefineProperties,
+    SymbolIterator
 } from "./runtime-aliases"
 
 //======================================================
 
-export const Map = getGlobal().Map || FakeMap;
+export const Map = GLOBAL.Map && GLOBAL.Map.prototype[SymbolIterator] ? GLOBAL.Map : FakeMap;
 export default Map;
 
 export function FakeMap() {
@@ -25,6 +26,11 @@ objectDefineProperties(FakeMap.prototype, {
                 values: []
             } });
             return this._;
+        }
+    },
+    get: {
+        value(key) {
+            return this._.values[arrayIndexOf(this._.keys, key)];
         }
     },
     set: {
@@ -78,5 +84,11 @@ objectDefineProperties(FakeMap.prototype, {
         value(cb) {
             this._.keys.forEach((item, i) => cb(this._.values[i], item, this));
         }
+    },
+    [SymbolIterator]: {
+        value() {
+            return this.entries();
+        }
     }
 });
+
