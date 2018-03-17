@@ -277,6 +277,10 @@ const EventEmitter = Compose.extend(/** @lends EventEmitter.prototype */{
     hasListeners() {
         const { listeners, pipes } = getSetup.call(this);
         return objectKeys(listeners).some(evName => !!listeners[evName].size) || !!pipes.size;
+    },
+
+    destroy() {
+        Compose.prototype.destroy.call(this, true); // destroy now!
     }
 });
 
