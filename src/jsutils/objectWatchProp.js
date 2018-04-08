@@ -1,4 +1,5 @@
 import {objectDefineProperty} from "./runtime-aliases";
+import Set from "./Set"
 import nextTick from "./nextTick"
 
 //---------------------------------------------------------------------------
@@ -7,7 +8,7 @@ const DEFAULT_PROP_DEFINITION = { configurable: true, enumerable: true };
 
 
 /**
- * A lightweight utility to Watch an object's property and get notified when it changes
+ * A lightweight utility to Watch an object's property and get notified when it changes.
  *
  * @param {Object} obj
  * @param {String} prop
