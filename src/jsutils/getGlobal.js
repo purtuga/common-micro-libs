@@ -1,9 +1,10 @@
 
 export const GLOBAL = (() => {
+    const undef = 'undefined';
     /* global self, window, global */
-    if (typeof window !== 'undefined') { return window; }
-    if (typeof global !== 'undefined') { return global; }
-    if (typeof self !== 'undefined') { return self; }
+    if (typeof window !== undef) { return window; }
+    if (typeof global !== undef) { return global; }
+    if (typeof self !== undef) { return self; }
     return Function('return this;')();
 })();
 
