@@ -63,8 +63,8 @@ objectDefineProperties(FakeSet.prototype, {
         }
     },
     forEach: {
-        value(cb) {
-            this._.forEach(item => cb(item, item, this));
+        value(cb, thisArg) {
+            this._.forEach(item => cb(item, item, this), thisArg);
         }
     },
     [SymbolIterator]: {
