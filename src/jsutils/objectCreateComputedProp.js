@@ -12,6 +12,9 @@ import {
  * @param {Object} obj
  * @param {String} prop
  * @param {Function} setter
+ *  A callback function that will be used to retrieve the computed prop's
+ *  value. Function is called with a context (`this`) of the object and
+ *  will receive one input param - the Object itself.
  * @param {Boolean} [enumerable=true]
  *
  */
@@ -19,9 +22,24 @@ export function objectCreateComputedProp(obj, prop, setter, enumerable = true) {
     let propValue;
     let needsInitialization = true;
     let allowSet = false;
+    let needsNewValue = true;
 
     const dependencyTracker = () => {
-        setPropValue();
+        // If this computed property has watchers or dependents,
+        // then update prop value.
+        // else:
+        // Just mark it as needing a new value, which means that the
+        // property value will not be re-generated until the next
+        // time the object prop is accessed.
+        if (
+            obj[OBSERVABLE_IDENTIFIER].props[prop].dependents.size ||
+            obj[OBSERVABLE_IDENTIFIER].props[prop].watchers.size
+        ) {
+            setPropValue();
+        }
+        else {
+            needsNewValue = true;
+        }
     };
 
     const setPropValue = silentSet => {
@@ -30,18 +48,22 @@ export function objectCreateComputedProp(obj, prop, setter, enumerable = true) {
             if (silentSet) {
                 propValue = setter.call(obj);
             } else {
-                // Update is done via the prop assignment so that if (for some reason)
-                // this is being used with a library that also intercepts object
-                // get/set methods, then it is notified of change.
+                // Update is done via the prop assignment, which means that
+                // all dependent/watcher notifiers is handled as part of the
+                // objectWatchProp() functionality.
+                // Doing the update this way also supports the use of these
+                // objects with other library that may also intercept getter/setters.
                 allowSet = true;
-                obj[prop] = setter.call(obj);
+                obj[prop] = setter.call(obj, obj);
             }
         } catch (e) {
-            unsetDependencyTracker(dependencyTracker);
             allowSet = false;
+            needsNewValue = false;
+            unsetDependencyTracker(dependencyTracker);
             throw e;
         }
         allowSet = false;
+        needsNewValue = false;
         unsetDependencyTracker(dependencyTracker);
     };
 
@@ -63,6 +85,10 @@ export function objectCreateComputedProp(obj, prop, setter, enumerable = true) {
                 needsInitialization = false;
                 setPropValue(true);
             }
+            else if (needsNewValue) {
+                setPropValue();
+            }
+
             return propValue;
         },
         set(newValue) {
