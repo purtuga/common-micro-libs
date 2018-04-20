@@ -56,8 +56,7 @@ export function objectWatchProp(obj, prop, callback) {
                 watchers: new Set()
             }
         });
-        obj[OBSERVABLE_IDENTIFIER].watchers.async = true;
-        obj[OBSERVABLE_IDENTIFIER].watchers.notify = notify;
+        setupCallbackStore(obj[OBSERVABLE_IDENTIFIER].watchers, true);
     }
 
     // Convert prop to observable?
@@ -106,6 +105,16 @@ export function objectWatchProp(obj, prop, callback) {
     return unWatch;
 }
 
+function setupCallbackStore (store, async = false) {
+    store.async = async;
+    store.isQueued = false;
+    store.notify = notify;
+    store.run = function () {
+        store.forEach(execCallback);
+        store.isQueued = false;
+    };
+}
+
 function setupPropState(obj, prop) {
     if (!obj[OBSERVABLE_IDENTIFIER].props[prop]) {
         obj[OBSERVABLE_IDENTIFIER].props[prop] = {
@@ -116,11 +125,8 @@ function setupPropState(obj, prop) {
             storeCallback: storeCallback,
             setupInterceptors: true
         };
-        obj[OBSERVABLE_IDENTIFIER].props[prop].dependents.async = false;
-        obj[OBSERVABLE_IDENTIFIER].props[prop].dependents.notify = notify;
-
-        obj[OBSERVABLE_IDENTIFIER].props[prop].watchers.async = true;
-        obj[OBSERVABLE_IDENTIFIER].props[prop].watchers.notify = notify;
+        setupCallbackStore(obj[OBSERVABLE_IDENTIFIER].props[prop].dependents, false);
+        setupCallbackStore(obj[OBSERVABLE_IDENTIFIER].props[prop].watchers, true);
     }
     return obj[OBSERVABLE_IDENTIFIER].props[prop];
 }
@@ -174,16 +180,14 @@ function notify() {
     if (!this.size || (this.async && this.isQueued)) {
         return;
     }
+
     if (!this.async) {
         this.forEach(execCallback);
         return;
     }
+
     this.isQueued = true;
-    // FIXME: can we use static function below on input to nextTick()
-    nextTick(() => {
-        this.forEach(execCallback);
-        this.isQueued = false;
-    });
+    nextTick(this.run);
 }
 
 function execCallback(cb) {
