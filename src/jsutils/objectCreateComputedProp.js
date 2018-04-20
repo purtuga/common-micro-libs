@@ -7,7 +7,7 @@ import {
 } from "./objectWatchProp";
 
 /**
- * Creates a computed property on a given object
+ * Creates a computed property on a given object.
  *
  * @param {Object} obj
  * @param {String} prop
@@ -30,6 +30,9 @@ export function objectCreateComputedProp(obj, prop, setter, enumerable = true) {
             if (silentSet) {
                 propValue = setter.call(obj);
             } else {
+                // Update is done via the prop assignment so that if (for some reason)
+                // this is being used with a library that also intercepts object
+                // get/set methods, then it is notified of change.
                 allowSet = true;
                 obj[prop] = setter.call(obj);
             }
@@ -42,9 +45,14 @@ export function objectCreateComputedProp(obj, prop, setter, enumerable = true) {
         unsetDependencyTracker(dependencyTracker);
     };
 
-    // Delete the property setup, if it is currently defined
-    if (obj[OBSERVABLE_IDENTIFIER] && obj[OBSERVABLE_IDENTIFIER].props[prop]) {
-        delete obj[OBSERVABLE_IDENTIFIER].props[prop];
+    // Does property already exists? Delete it.
+    if (prop in obj) {
+        delete obj[prop];
+
+        // Was prop an observable? if so, signal that interceptors must be redefined.
+        if (obj[OBSERVABLE_IDENTIFIER] && obj[OBSERVABLE_IDENTIFIER].props[prop]) {
+            obj[OBSERVABLE_IDENTIFIER].props[prop].setupInterceptors = true;
+        }
     }
 
     objectDefineProperty(obj, prop, {

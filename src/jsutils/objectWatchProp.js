@@ -60,58 +60,16 @@ export function objectWatchProp(obj, prop, callback) {
         obj[OBSERVABLE_IDENTIFIER].watchers.notify = notify;
     }
 
+    // Convert prop to observable?
     if (prop && !obj[OBSERVABLE_IDENTIFIER].props[prop]) {
-        obj[OBSERVABLE_IDENTIFIER].props[prop] = {
-            val: undefined,
-            dependents: new Set(),
-            watchers: new Set(),
-            storeCallback: storeCallback
-        };
-        obj[OBSERVABLE_IDENTIFIER].props[prop].dependents.async = false;
-        obj[OBSERVABLE_IDENTIFIER].props[prop].dependents.notify = notify;
-
-        obj[OBSERVABLE_IDENTIFIER].props[prop].watchers.async = true;
-        obj[OBSERVABLE_IDENTIFIER].props[prop].watchers.notify = notify;
-
-        const propOldDescriptor = Object.getOwnPropertyDescriptor(obj, prop) || DEFAULT_PROP_DEFINITION;
-
-        if (!propOldDescriptor.get) {
-            obj[OBSERVABLE_IDENTIFIER].props[prop].val = obj[prop];
-        }
-
-        objectDefineProperty(obj, prop, {
-            configurable: propOldDescriptor.configurable || false,
-            enumerable: propOldDescriptor.enumerable || false,
-            get() {
-                if (TRACKERS.size) {
-                    TRACKERS.forEach(
-                        obj[OBSERVABLE_IDENTIFIER].props[prop].storeCallback,
-                        obj[OBSERVABLE_IDENTIFIER].props[prop]
-                    );
-                }
-
-                if (propOldDescriptor.get) {
-                    return propOldDescriptor.get.call(obj);
-                }
-                return obj[OBSERVABLE_IDENTIFIER].props[prop].val;
-            },
-            set(newVal) {
-                const priorVal = obj[prop];
-                if (propOldDescriptor.set) {
-                    newVal = propOldDescriptor.set.call(obj, newVal);
-                } else {
-                    obj[OBSERVABLE_IDENTIFIER].props[prop].val = newVal;
-                }
-
-                if (newVal !== priorVal) {
-                    obj[OBSERVABLE_IDENTIFIER].props[prop].watchers.notify();
-                    obj[OBSERVABLE_IDENTIFIER].props[prop].dependents.notify();
-                    obj[OBSERVABLE_IDENTIFIER].watchers.notify();
-                }
-
-                return newVal;
-            }
-        });
+        setupPropState(obj, prop);
+        setupPropInterceptors(obj, prop);
+    }
+    // Else: do we need to setup the interceptors (again)?
+    // (Used by Computed props when they are created against a prop has
+    // been setup as an observable)
+    else if (prop && obj[OBSERVABLE_IDENTIFIER].props[prop].setupInterceptors) {
+        setupPropInterceptors(obj, prop);
     }
 
     if (prop && callback) {
@@ -121,7 +79,8 @@ export function objectWatchProp(obj, prop, callback) {
         // make ALL props observable
         objectKeys(obj).forEach(objProp => {
             if (!obj[OBSERVABLE_IDENTIFIER].props[objProp]) {
-                objectWatchProp(obj, objProp);
+                setupPropState(obj, objProp);
+                setupPropInterceptors(obj, objProp);
             }
         });
 
@@ -147,11 +106,72 @@ export function objectWatchProp(obj, prop, callback) {
     return unWatch;
 }
 
+function setupPropState(obj, prop) {
+    if (!obj[OBSERVABLE_IDENTIFIER].props[prop]) {
+        obj[OBSERVABLE_IDENTIFIER].props[prop] = {
+            val: undefined,
+            dependents: new Set(),
+            watchers: new Set(),
+            parent: obj[OBSERVABLE_IDENTIFIER],
+            storeCallback: storeCallback,
+            setupInterceptors: true
+        };
+        obj[OBSERVABLE_IDENTIFIER].props[prop].dependents.async = false;
+        obj[OBSERVABLE_IDENTIFIER].props[prop].dependents.notify = notify;
+
+        obj[OBSERVABLE_IDENTIFIER].props[prop].watchers.async = true;
+        obj[OBSERVABLE_IDENTIFIER].props[prop].watchers.notify = notify;
+    }
+    return obj[OBSERVABLE_IDENTIFIER].props[prop];
+}
+
+function setupPropInterceptors(obj, prop) {
+    const propOldDescriptor =
+        Object.getOwnPropertyDescriptor(obj, prop) || DEFAULT_PROP_DEFINITION;
+
+    if (!propOldDescriptor.get) {
+        obj[OBSERVABLE_IDENTIFIER].props[prop].val = obj[prop];
+    }
+
+    objectDefineProperty(obj, prop, {
+        configurable: propOldDescriptor.configurable || false,
+        enumerable: propOldDescriptor.enumerable || false,
+        get() {
+            if (TRACKERS.size) {
+                TRACKERS.forEach(trackerCallback => {
+                    obj[OBSERVABLE_IDENTIFIER].props[prop].storeCallback(trackerCallback);
+                });
+            }
+
+            if (propOldDescriptor.get) {
+                return propOldDescriptor.get.call(obj);
+            }
+            return obj[OBSERVABLE_IDENTIFIER].props[prop].val;
+        },
+        set(newVal) {
+            const priorVal = obj[prop];
+            if (propOldDescriptor.set) {
+                newVal = propOldDescriptor.set.call(obj, newVal);
+            } else {
+                obj[OBSERVABLE_IDENTIFIER].props[prop].val = newVal;
+            }
+
+            if (newVal !== priorVal) {
+                obj[OBSERVABLE_IDENTIFIER].props[prop].watchers.notify();
+                obj[OBSERVABLE_IDENTIFIER].props[prop].dependents.notify();
+                obj[OBSERVABLE_IDENTIFIER].watchers.notify();
+            }
+
+            return newVal;
+        }
+    });
+    obj[OBSERVABLE_IDENTIFIER].props[prop].setupInterceptors = false;
+}
 
 function notify() {
-    // this: new Set()
-    //      Set instance could have two additional attributes: async ++ isQueued
-    if (this.async && this.isQueued) {
+    // this: new Set(). Set instance could have two additional attributes: async ++ isQueued
+
+    if (!this.size || (this.async && this.isQueued)) {
         return;
     }
     if (!this.async) {
