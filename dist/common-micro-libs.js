@@ -116,7 +116,7 @@
         __webpack_require__.d(__webpack_exports__, "a", function() {
             return dataStore;
         });
-        // POLYFILL FOR WEAKMAP
+        // POLYFILL FOR WeakMap
         //  [pt] changed how "delete" is defined so that it can work in IE8
         /* jshint ignore:start */
         /**

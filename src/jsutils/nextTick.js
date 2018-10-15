@@ -13,8 +13,8 @@ let nextTick = (function(){
     // Native Promsie? Use it.
     if (typeof Promise === 'function' && reIsNativeCode.test(Promise.toString())) {
         let resolved = Promise.resolve();
-        return function _nextTick(fn) {
-            resolved.then(fn).catch(e => console.log(e));
+        return function _nextTickPromise(fn) {
+            resolved.then(fn).catch(e => console.error(e));
         };
     }
 
@@ -28,14 +28,13 @@ let nextTick = (function(){
             immediates.shift()();
             if (immediates.length) {
                 processPending();
-
             } else {
                 processing = false;
             }
         }, 0);
     }
 
-    return function _nextTick(fn) {
+    return function _nextTickSetTimeout(fn) {
         immediates.push(fn);
         if (!processing) {
             processing = true;
@@ -43,6 +42,33 @@ let nextTick = (function(){
         }
     };
 })();
+
+let isQueued = false;
+const queuedCallbacks = new Set();
+let i, t;
+const flushQueue = () => {
+    const callbacks = [ ...queuedCallbacks ];
+    queuedCallbacks.clear();
+    isQueued = false;
+    for (i = 0, t = callbacks.length; i < t; i++) {
+        callbacks[i]();
+    }
+};
+
+/**
+ * Queues a callback to be executed on nextTick. Unlike calling `nextTick` directly
+ * `queue()` will ensure that the same callback is not executed more than once when
+ * `nextTick` runs.
+ *
+ * @param {Function} callback
+ */
+nextTick.queue = callback => {
+    queuedCallbacks.add(callback);
+    if (!isQueued) {
+        isQueued = true;
+        nextTick(flushQueue);
+    }
+};
 
 export default nextTick;
 export { nextTick };

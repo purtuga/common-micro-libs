@@ -1,26 +1,81 @@
+/**
+ * return a value to a given method
+ *
+ * @function
+ * @param {Function} fn
+ * @param {*} ctx The context to be assigned to `fn`
+ * @return {Function}
+ *
+ * @example
+ *
+ * f = functionBin(function() { console.log(`Hello ${this.name}`); }, { name: "Jackson" });
+ * f(); // => "Hello Jackson"
+ */
+export const functionBind = Function.bind.call.bind(Function.bind);
 
-// Function
-    // functionBind(fn, fnParent)
-export const functionBind       = Function.bind.call.bind(Function.bind);
-    // usage: functionBindCall(Array.prototype.forEach) // generates a bound function to Array.prototype.forEach.call
-export const functionBindCall   = functionBind(Function.call.bind, Function.call);
+/**
+ * return a bound `.call` to the given method.
+ *
+ * @type function
+ * @param {Function} fn
+ * @return {Function}
+ * @example
+ *
+ * forEach = functionBindCall(Array.prototype.forEach);
+ * // same as doing: Array.prototype.forEach.call (but returns a new "call" method);
+ */
+export const functionBindCall = functionBind(Function.call.bind, Function.call);
 
-// Object
+// Object ===============================================================================
+export const isObject                 = obj => Object.prototype.toString.call(obj) === "[object Object]";
 export const objectDefineProperty     = Object.defineProperty;
 export const objectDefineProperties   = Object.defineProperties;
 export const objectKeys               = Object.keys;
+export const defineProperty = (obj, prop, value, getter, setter, configurable = true, enumerable = false, writable = true) => {
+    const descriptor = {
+        configurable,
+        enumerable,
+        writable
+    };
+
+    if (getter || setter) {
+        descriptor.writable = false;
+        descriptor.get = getter;
+        descriptor.set = setter;
+    } else {
+        descriptor.value = value;
+    }
+
+    objectDefineProperty(obj, prop, descriptor);
+
+    return obj;
+};
 
 
-// Array
+// Array ===============================================================================
 const arr = [];
 export const isArray        = Array.isArray;
 export const arrayForEach   = functionBindCall(arr.forEach);
 export const arrayIndexOf   = functionBindCall(arr.indexOf);
 export const arraySplice    = functionBindCall(arr.splice);
 
-// Logging
+
+// Logging ===============================================================================
 export const consoleLog = console.log;
 export const consoleError = console.error || consoleLog;
+export const consoleWarn = console.warn || consoleLog;
 
-// Iterators
+
+// Iterators ===============================================================================
 export const SymbolIterator = "undefined" !== typeof Symbol && Symbol.iterator ? Symbol.iterator : "@@iterator";
+
+
+// DOM ===============================================================================
+const HTMLElementPrototype =HTMLElement.prototype;
+export const doc = document;
+export const createDocFragment = () => doc.createDocumentFragment();
+export const createElement = tagName => doc.createElement(tagName);
+export const appendChild = functionBindCall(HTMLElementPrototype.appendChild);
+export const hasAttribute = functionBindCall(HTMLElementPrototype.hasAttribute);
+export const setAttribute = functionBindCall(HTMLElementPrototype.setAttribute);
+export const removeAttribute = functionBindCall(HTMLElementPrototype.removeAttribute);
