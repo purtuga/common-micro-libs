@@ -61,9 +61,9 @@ export const arraySplice    = functionBindCall(arr.splice);
 
 
 // Logging ===============================================================================
-export const consoleLog = console.log;
-export const consoleError = console.error || consoleLog;
-export const consoleWarn = console.warn || consoleLog;
+export const consoleLog = console.log; // eslint-disable-line
+export const consoleError = console.error || consoleLog; // eslint-disable-line
+export const consoleWarn = console.warn || consoleLog; // eslint-disable-line
 
 
 // Iterators ===============================================================================
@@ -75,6 +75,7 @@ const HTMLElementPrototype =HTMLElement.prototype;
 export const doc = document;
 export const createDocFragment = () => doc.createDocumentFragment();
 export const createElement = tagName => doc.createElement(tagName);
+export const createTextNode = data => doc.createTextNode(data || "");
 export const appendChild = functionBindCall(HTMLElementPrototype.appendChild);
 export const hasAttribute = functionBindCall(HTMLElementPrototype.hasAttribute);
 export const setAttribute = functionBindCall(HTMLElementPrototype.setAttribute);
