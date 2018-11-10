@@ -1,5 +1,6 @@
 const OBJECT_TYPE   = "[object Object]";
 const _toString     = Function.call.bind(Object.prototype.toString);
+const _hasOwnProperty = Function.call.bind(Object.prototype.hasOwnProperty);
 
 //============================================================
 
@@ -34,7 +35,7 @@ export function objectExtend(mergeIntoObj, ...mergeObjects) {
         }
 
         for (key in mergeObjects[i]) {
-            if (mergeObjects[i].hasOwnProperty(key)){
+            if (_hasOwnProperty(mergeObjects[i], key)){
                 if (
                     deepMerge &&
                     _toString(response[key]) === OBJECT_TYPE &&
