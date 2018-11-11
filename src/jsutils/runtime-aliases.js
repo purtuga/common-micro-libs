@@ -34,15 +34,14 @@ export const objectKeys               = Object.keys;
 export const defineProperty = (obj, prop, value, getter, setter, configurable = true, enumerable = false, writable = true) => {
     const descriptor = {
         configurable,
-        enumerable,
-        writable
+        enumerable
     };
 
     if (getter || setter) {
-        descriptor.writable = false;
         descriptor.get = getter;
         descriptor.set = setter;
     } else {
+        descriptor.writable = writable;
         descriptor.value = value;
     }
 
