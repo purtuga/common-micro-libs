@@ -24,10 +24,10 @@ export function fitToParent(ele, offset, $adjustEle){
     }
 
     var
-    $ui                 = ele,
-    $scrollEle          = $adjustEle || $ui,
-    $parent             = $ui.parentElement,
-    parentComputedStyle = window.getComputedStyle($parent, null);
+        $ui                 = ele,
+        $scrollEle          = $adjustEle || $ui,
+        $parent             = $ui.parentElement,
+        parentComputedStyle = window.getComputedStyle($parent, null);
 
     if (typeof offset !== "number") { offset = 0; }
 
@@ -37,8 +37,8 @@ export function fitToParent(ele, offset, $adjustEle){
     }, 0);
 
     $scrollEle.style.height = (
-            $parent.clientHeight - (($ui.offsetHeight - $scrollEle.offsetHeight) + offset)
-        ) + "px";
+        $parent.clientHeight - (($ui.offsetHeight - $scrollEle.offsetHeight) + offset)
+    ) + "px";
 }
 export default fitToParent;
 

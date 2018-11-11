@@ -42,7 +42,7 @@ export function objectExtend(mergeIntoObj, ...mergeObjects) {
                     _toString(mergeObjects[i][key]) === OBJECT_TYPE
                 ) {
                     response[key] = objectExtend( true, response[key], mergeObjects[i][key]);
-                    
+
                 } else {
                     response[key] = mergeObjects[i][key];
                 }

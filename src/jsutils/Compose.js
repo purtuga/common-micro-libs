@@ -1,6 +1,6 @@
-import objectExtend     from "./objectExtend"
-import dataStore        from "./dataStore"
-import queueCallback    from "./queueCallback"
+import objectExtend from "./objectExtend"
+import dataStore from "./dataStore"
+import queueCallback from "./queueCallback"
 
 //=========================================================
 const PRIVATE = dataStore.create();
@@ -9,10 +9,6 @@ const COMMON_DESTROY_METHOD_NAME = [
     "remove",       // DOM Events Listeners
     "off"           // EventEmitter Listeners
 ];
-
-// Aliases
-const objectCreate = Object.create;
-
 
 // return all KEYs of an object, even those that are not iterable
 function objectKeys(prototype){

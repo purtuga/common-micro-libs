@@ -59,7 +59,7 @@ export function fillTemplate(template, data) {
             item = opt.template;
 
             for(i=0,j=opt.tokens.length; i<j; i++){
-                opt.tokens[i]   = opt.tokens[i].replace(/[\{\}]/g, "");
+                opt.tokens[i]   = opt.tokens[i].replace(/[{}]/g, "");
                 tokenVal        = getObjectPropValue(data[x], opt.tokens[i]) || '';
                 //tokenVal        = data[x][ opt.tokens[i] ] || '';
 

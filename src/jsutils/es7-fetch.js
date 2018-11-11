@@ -1,6 +1,10 @@
-/* jshint ignore:start */
+/* eslint-disable */
+
 import Promise      from "./es6-promise";
 import EventEmitter from "./EventEmitter"
+
+console.warn('[common-micro-libs] es7-fetch.js IS DEPRECARTED!... Use fetch.js');
+
 
 const globalEvents = EventEmitter.create();
 
@@ -491,4 +495,5 @@ fetchPolyfill();
 export default fetchPolyfill;
 export { fetchPolyfill };
 
-/* jshint ignore:end */
+
+/* eslint-enable */

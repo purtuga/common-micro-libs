@@ -41,9 +41,9 @@ export default onDomResize;
 function getEleMonitor(ele) {
     let eleMonitor;
     if (PRIVATE.has(ele)) {
-         eleMonitor = PRIVATE.get(ele);
-         eleMonitor.attach(ele);
-         return eleMonitor;
+        eleMonitor = PRIVATE.get(ele);
+        eleMonitor.attach(ele);
+        return eleMonitor;
     }
 
     eleMonitor = DomElementResizeMonitor.create();

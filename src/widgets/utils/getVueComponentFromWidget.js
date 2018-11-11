@@ -97,8 +97,6 @@ function getVueComponentFromWidget(
             // A live options callback will get the following:
             //  function(vueInstance, ...watchArgs){}
             if (watchExp) {
-                let options = this.options || {};
-
                 Object.keys(watchExp).forEach((option) => {
                     if (typeof watchExp[option] === "function") {
                         watchers.push($watch(

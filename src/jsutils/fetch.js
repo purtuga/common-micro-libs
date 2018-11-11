@@ -6,7 +6,6 @@ import EventEmitter from "./EventEmitter"
 const globalEvents = EventEmitter.create();
 
 export const fetch = getGlobal().fetch || fakeFetch;
-export default;
 
 //---------------------------------------------------------------------------------------
 // Code below taken from unfetch:

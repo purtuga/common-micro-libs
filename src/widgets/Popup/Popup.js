@@ -8,10 +8,10 @@ import popupTemplate        from "./popup.html";
 import "./popup.less";
 
 var
-PRIVATE = dataStore.create(),
-BODY = document.body,
+    PRIVATE = dataStore.create(),
+    BODY = document.body,
 
-/**
+    /**
  * Displays a popup relative to a given element (attached to).
  *
  * @class Popup
@@ -35,121 +35,121 @@ BODY = document.body,
  *  Function is given the DOM event object
  *
  */
-Popup = {
-    init: function(options){
-        let inst = {
-            opt:            objectExtend({}, this.getFactory().defaults, options),
-            $ele:           null,
-            domListeners:   [],
-            scrollTop:      0
-        };
+    Popup = {
+        init: function(options){
+            let inst = {
+                opt:            objectExtend({}, this.getFactory().defaults, options),
+                $ele:           null,
+                domListeners:   [],
+                scrollTop:      0
+            };
 
-        PRIVATE.set(this, inst);
+            PRIVATE.set(this, inst);
 
-        this.$ui = parseHTML(popupTemplate).firstChild;
+            this.$ui = parseHTML(popupTemplate).firstChild;
 
-        if (inst.opt.content) {
-            this.setContent(inst.opt.content);
-        }
+            if (inst.opt.content) {
+                this.setContent(inst.opt.content);
+            }
 
-        if (inst.opt.attachTo) {
-            this.attachTo(inst.opt.attachTo);
-        }
+            if (inst.opt.attachTo) {
+                this.attachTo(inst.opt.attachTo);
+            }
 
-        this.onDestroy(removeAllDomListeners.bind(this));
-    },
+            this.onDestroy(removeAllDomListeners.bind(this));
+        },
 
-    /**
+        /**
      * Sets the content of the popup
      *
      * @param {Widget|HTMLElement} [content]
      */
-    setContent: function(content){
-        var $ui = this.getEle();
+        setContent: function(content){
+            var $ui = this.getEle();
 
-        $ui.textContent = "";
+            $ui.textContent = "";
 
-        if (!content){
-            return;
-        }
+            if (!content){
+                return;
+            }
 
-        if (content.appendTo) {
-            content.appendTo($ui);
+            if (content.appendTo) {
+                content.appendTo($ui);
 
-        } else if ("childNodes" in content) {
-            $ui.appendChild(content);
-        }
-        if (this.isVisible()) {
-            this.show(); // To re-evaluate position
-        }
-    },
+            } else if ("childNodes" in content) {
+                $ui.appendChild(content);
+            }
+            if (this.isVisible()) {
+                this.show(); // To re-evaluate position
+            }
+        },
 
-    /**
+        /**
      * Attaches the popup to a given element
      *
      * @param {HTMLElement|Widget} ele
      */
-    attachTo: function(ele){
-        var inst = PRIVATE.get(this);
+        attachTo: function(ele){
+            var inst = PRIVATE.get(this);
 
-        if (ele.getEle) {
-            ele = ele.getEle();
-        }
+            if (ele.getEle) {
+                ele = ele.getEle();
+            }
 
-        inst.$ele = ele;
+            inst.$ele = ele;
 
-        if (this.isVisible()) {
-            this.show();
-        }
-    },
+            if (this.isVisible()) {
+                this.show();
+            }
+        },
 
-    show: function(){
-        let inst    = PRIVATE.get(this),
-            $ui     = this.getEle();
+        show: function(){
+            let inst    = PRIVATE.get(this),
+                $ui     = this.getEle();
 
-        if (!inst.$ele) {
-            return;
-        }
+            if (!inst.$ele) {
+                return;
+            }
 
-        this.appendTo(BODY);
-        domPosition($ui, inst.$ele, inst.opt.position);
-        removeAllDomListeners.call(this);
-        $ui.scrollTop = inst.scrollTop;
+            this.appendTo(BODY);
+            domPosition($ui, inst.$ele, inst.opt.position);
+            removeAllDomListeners.call(this);
+            $ui.scrollTop = inst.scrollTop;
 
-        setTimeout(function(){
-            inst.domListeners.push(
-                domAddEventListener(BODY, "click", function(ev){
-                    if (!$ui.contains(ev.target)) {
-                        if (inst.opt.onHide && inst.opt.onHide(ev)) {
-                            return;
+            setTimeout(function(){
+                inst.domListeners.push(
+                    domAddEventListener(BODY, "click", function(ev){
+                        if (!$ui.contains(ev.target)) {
+                            if (inst.opt.onHide && inst.opt.onHide(ev)) {
+                                return;
+                            }
+
+                            this.hide();
                         }
+                    }.bind(this))
+                );
+            }.bind(this), 200);
+        },
 
-                        this.hide();
-                    }
-                }.bind(this))
-            );
-        }.bind(this), 200);
+        hide: function(){
+            PRIVATE.get(this).scrollTop = this.getEle().scrollTop;
+            this.detach();
+            removeAllDomListeners.call(this);
+        }
     },
-
-    hide: function(){
-        PRIVATE.get(this).scrollTop = this.getEle().scrollTop;
-        this.detach();
-        removeAllDomListeners.call(this);
-    }
-},
-/**
+    /**
  * Removes the DOM listeners
  * @private
  */
-removeAllDomListeners = function(){
-    var domListeners = PRIVATE.get(this).domListeners;
-    if (domListeners.length) {
-        var evListener;
-        while (evListener = domListeners.shift()) {
-            evListener.remove();
+    removeAllDomListeners = function(){
+        var domListeners = PRIVATE.get(this).domListeners;
+        if (domListeners.length) {
+            var evListener;
+            while ((evListener = domListeners.shift())) {
+                evListener.remove();
+            }
         }
-    }
-};
+    };
 
 Popup = Widget.extend(Popup);
 

@@ -25,11 +25,11 @@ var xmlEscape = /** @lends xmlEscape */{
         }
 
         return xmlString
-                .replace(/&/g,'&amp;')
-                .replace(/</g,'&lt;')
-                .replace(/>/g,'&gt;')
-                .replace(/'/g,"&apos;")
-                .replace(/"/g,"&quot;");
+            .replace(/&/g,'&amp;')
+            .replace(/</g,'&lt;')
+            .replace(/>/g,'&gt;')
+            .replace(/'/g,"&apos;")
+            .replace(/"/g,"&quot;");
 
     },
 
@@ -54,11 +54,11 @@ var xmlEscape = /** @lends xmlEscape */{
         }
 
         return xmlString
-                .replace(/&lt;/g,'<')
-                .replace(/&gt;/g,'>')
-                .replace(/&amp;/g,'&')
-                .replace(/&apos;/g,"'")
-                .replace(/&quot;/g,'"');
+            .replace(/&lt;/g,'<')
+            .replace(/&gt;/g,'>')
+            .replace(/&amp;/g,'&')
+            .replace(/&apos;/g,"'")
+            .replace(/&quot;/g,'"');
 
     }
 

@@ -25,8 +25,8 @@ var DOCUMENT = document;
  */
 export function parseHTML(htmlString){
     var
-    fragment    = DOCUMENT.createDocumentFragment(),
-    div         = DOCUMENT.createElement("div");
+        fragment    = DOCUMENT.createDocumentFragment(),
+        div         = DOCUMENT.createElement("div");
 
     // If fragment does not have a .children porperty, then create it by
     // point it at childNodes

@@ -28,7 +28,7 @@ function flushQueue() {
     callbacks.clear();
     queue = null;
     let cb;
-    while (cb = cbList.shift()) {
+    while ((cb = cbList.shift())) {
         cb();
         cb = null;
     }

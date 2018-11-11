@@ -34,14 +34,14 @@ const WATCHER_IDENTIFIER = "___$watching$___";
  *
  * // stop watching
  * unWatchName();
- * 
+ *
  * @example
- * 
+ *
  * const oo = {
  *      name: "paul",
  *      country: "usa"
  * };
- * 
+ *
  * // watch all changes to object
  * objectWatchProp(oo, null, () => console.log("Something changed in object"));
  *

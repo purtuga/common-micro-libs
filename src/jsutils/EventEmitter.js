@@ -148,7 +148,7 @@ const EventEmitter = Compose.extend(/** @lends EventEmitter.prototype */{
      */
     emit: function(evName){
         if (evName === "*" || evName === this) {
-            console.log("EventEmitter#emit(): can not emit to events to '*'"); // jshint ignore:line
+            console.log("EventEmitter#emit(): can not emit to events to '*'"); // eslint-disable-line
             return;
         }
 

@@ -1,3 +1,4 @@
+/* global setImediate:true */
 let reIsNativeCode = /native code/i;
 
 /**
@@ -14,7 +15,7 @@ let nextTick = (function(){
     if (typeof Promise === 'function' && reIsNativeCode.test(Promise.toString())) {
         let resolved = Promise.resolve();
         return function _nextTickPromise(fn) {
-            resolved.then(fn).catch(e => console.error(e));
+            resolved.then(fn).catch(e => console.error(e)); // eslint-disable-line
         };
     }
 

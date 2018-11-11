@@ -85,11 +85,11 @@ var DomKeyboardInteraction = /** @lends DomKeyboardInteraction.prototype */{
     init: function(options){
 
         var
-        inst            = {
-                            opt: objectExtend({}, DomKeyboardInteraction.defaults, options)
-                        },
-        opt             = inst.opt,
-        domListeners    = [];
+            inst            = {
+                opt: objectExtend({}, DomKeyboardInteraction.defaults, options)
+            },
+            opt             = inst.opt,
+            domListeners    = [];
 
         PRIVATE.set(this, inst);
 
@@ -205,12 +205,12 @@ var DomKeyboardInteraction = /** @lends DomKeyboardInteraction.prototype */{
      */
     focusNext: function(){
         var
-        inst            = PRIVATE.get(this),
-        scrollingParent = inst.opt.eleGroup,
-        groupChildren   = inst.getChildren(),
-        hasFocus        = inst.hasFocus,
-        setFocus        = inst.setFocus,
-        currentFocusEle, currentFocusEleIndex;
+            inst            = PRIVATE.get(this),
+            scrollingParent = inst.opt.eleGroup,
+            groupChildren   = inst.getChildren(),
+            hasFocus        = inst.hasFocus,
+            setFocus        = inst.setFocus,
+            currentFocusEle, currentFocusEleIndex;
 
         if (!groupChildren.length) {
             return;
@@ -254,14 +254,14 @@ var DomKeyboardInteraction = /** @lends DomKeyboardInteraction.prototype */{
      */
     focusPrevious: function(){
         var
-        inst            = PRIVATE.get(this),
-        opt             = inst.opt,
-        scrollingParent = opt.eleGroup,
-        groupChildren   = inst.getChildren(),
-        lastIndex       = groupChildren.length - 1,
-        hasFocus        = inst.hasFocus,
-        setFocus        = inst.setFocus,
-        currentFocusEle, currentFocusEleIndex;
+            inst            = PRIVATE.get(this),
+            opt             = inst.opt,
+            scrollingParent = opt.eleGroup,
+            groupChildren   = inst.getChildren(),
+            lastIndex       = groupChildren.length - 1,
+            hasFocus        = inst.hasFocus,
+            setFocus        = inst.setFocus,
+            currentFocusEle, currentFocusEleIndex;
 
         if (!groupChildren.length) {
             return;

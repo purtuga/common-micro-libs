@@ -27,7 +27,7 @@ const isLeft    = /left/i;
  * @param {HTMLElement} anchorEle
  *
  * @param {Object} [options]
- * 
+ *
  * @param {String} [options.my]
  *  Which area of the `positionEle` should be used to position it against the
  *  `anchorEle`. Default is `top left`. Possible values:
