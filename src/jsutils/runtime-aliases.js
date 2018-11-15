@@ -60,6 +60,7 @@ export const isArray        = Array.isArray;
 export const arrayForEach   = functionBindCall(arr.forEach);
 export const arrayIndexOf   = functionBindCall(arr.indexOf);
 export const arraySplice    = functionBindCall(arr.splice);
+export const arraySlice    = functionBindCall(arr.slice);
 
 
 // Logging ===============================================================================
@@ -82,5 +83,6 @@ export const createTextNode = data => doc.createTextNode(data || "");
 export const appendChild = functionBindCall(HTMLElementPrototype.appendChild);
 export const insertBefore = functionBindCall(HTMLElementPrototype.insertBefore);
 export const hasAttribute = functionBindCall(HTMLElementPrototype.hasAttribute);
+export const getAttribute = functionBindCall(HTMLElementPrototype.getAttribute);
 export const setAttribute = functionBindCall(HTMLElementPrototype.setAttribute);
 export const removeAttribute = functionBindCall(HTMLElementPrototype.removeAttribute);
