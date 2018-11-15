@@ -27,7 +27,10 @@ export const functionBind = Function.bind.call.bind(Function.bind);
 export const functionBindCall = functionBind(Function.call.bind, Function.call);
 
 // Object ===============================================================================
-export const isObject                 = obj => Object.prototype.toString.call(obj) === "[object Object]";
+export const toString                 = functionBindCall(Object.prototype.toString);
+export const isObject                 = obj => toString(obj) === "[object Object]";
+export const isString                 = obj => toString(obj) === "[object String]";
+export const isFunction               = obj => toString(obj) === "[object Function]";
 export const objectDefineProperty     = Object.defineProperty;
 export const objectDefineProperties   = Object.defineProperties;
 export const objectKeys               = Object.keys;

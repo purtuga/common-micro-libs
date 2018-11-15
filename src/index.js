@@ -16,6 +16,7 @@ export * from "./domutils/domSetStyle"
 export * from "./domutils/domToggleClass"
 export * from "./domutils/domTriggerEvent"
 export * from "./domutils/fitEleToParent"
+export * from "./domutils/isTemplateElement.js"
 export * from "./domutils/onDomResize"
 export * from "./domutils/scrollEleIntoView"
 
