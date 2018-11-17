@@ -1,6 +1,4 @@
-const OBJECT_TYPE   = "[object Object]";
-const _toString     = Function.call.bind(Object.prototype.toString);
-const _hasOwnProperty = Function.call.bind(Object.prototype.hasOwnProperty);
+import {isObject} from "./runtime-aliases.js";
 
 //============================================================
 
@@ -35,11 +33,11 @@ export function objectExtend(mergeIntoObj, ...mergeObjects) {
         }
 
         for (key in mergeObjects[i]) {
-            if (_hasOwnProperty(mergeObjects[i], key)){
+            if (mergeObjects[i].hasOwnProperty(key)) {
                 if (
                     deepMerge &&
-                    _toString(response[key]) === OBJECT_TYPE &&
-                    _toString(mergeObjects[i][key]) === OBJECT_TYPE
+                    isObject(response[key]) &&
+                    isObject(mergeObjects[i][key])
                 ) {
                     response[key] = objectExtend( true, response[key], mergeObjects[i][key]);
 
