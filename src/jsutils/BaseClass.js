@@ -14,7 +14,7 @@ export class BaseClass {
     }
 
     /**
-     * Add a callback to be exeucted when `.destroy()` is executed
+     * Add a callback to be executed when `.destroy()` is executed
      *
      * @param {FUnction} callback
      */
@@ -29,7 +29,7 @@ export class BaseClass {
      * Run destroy logic, which by default is to run all callbacks stored via `.onDestroy()`
      */
     destroy() {
-        const callbackList = PRIVATE.get(this)
+        const callbackList = PRIVATE.get(this);
         if (callbackList) {
             callbackList.forEach(callback => {
                 try {

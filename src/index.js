@@ -1,4 +1,5 @@
 // ------------------------------------------------- DOM UTILITIES
+export * from "./domutils/DomResizableInteraction/index.js"
 export * from "./domutils/domAddClass"
 export * from "./domutils/domAddEventListener"
 export * from "./domutils/domChildren"
