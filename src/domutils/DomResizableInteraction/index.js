@@ -39,7 +39,7 @@ const CSS_CLASS_NO_USER_SELECT  = "dri--noUserSelect";
  * @fires DomResizableInteraction#resize-end
  * @fires DomResizableInteraction#resize
  */
-const DomResizableInteraction = EventEmitter.extend(/** @lends DomResizableInteraction.prototype */{
+export const DomResizableInteraction = EventEmitter.extend(/** @lends DomResizableInteraction.prototype */{
     init(options) {
         if (PRIVATE.get(this)) {
             return;
