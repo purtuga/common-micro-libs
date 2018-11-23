@@ -2,14 +2,9 @@ const LISTENER_STORAGE = Symbol("state");
 
 /**
  * Supper tiny minimalist EventEmitter
+ * @implements MinimalEventEmitter
  */
 export class Ev {
-    /**
-     * Set an event listener
-     * @param {String} evName
-     * @param {Function} callback
-     * @returns {EvOff}
-     */
     on(evName, callback) {
         getStoreFor(this, evName).add(callback);
         /**
@@ -18,18 +13,10 @@ export class Ev {
         return () => getStoreFor(this, evName).delete(callback);
     }
 
-    /**
-     * Emit an event
-     * @param {String} evName
-     * @param {*} data
-     */
     emit(evName, data) {
         getStoreFor(this, evName).forEach(callback => callback(data));
     }
 
-    /**
-     * Clear the all the event listeners
-     */
     clear() {
         getStoreFor(this).clear();
     }
@@ -52,3 +39,34 @@ function getStoreFor(inst, evName) {
     }
     return inst[LISTENER_STORAGE].get(evName);
 }
+
+
+/**
+ * Minimal EventEmitter interface provinding only the basics
+ *
+ * @interface MinimalEventEmitter
+ */
+
+/**
+ * Set an event listener
+ * @function
+ * @name MinimalEventEmitter#on
+ * @param {String} evName
+ * @param {Function} callback
+ * @returns {EvOff}
+ */
+
+/**
+ * Emit an event
+ *
+ * @function
+ * @name MinimalEventEmitter#emit
+ * @param {String} evName
+ * @param {*} data
+ */
+
+/**
+ * Clear the all the event listeners
+ * @function
+ * @name MinimalEventEmitter#clear
+ */
