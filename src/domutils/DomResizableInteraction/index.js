@@ -41,6 +41,8 @@ const CSS_CLASS_NO_USER_SELECT  = "dri--noUserSelect";
  */
 export const DomResizableInteraction = EventEmitter.extend(/** @lends DomResizableInteraction.prototype */{
     init(options) {
+        console.warn("DomResizableInteraction: Deprecated! Use @purtuga/interactions"); // eslint-disable-line
+
         if (PRIVATE.get(this)) {
             return;
         }
