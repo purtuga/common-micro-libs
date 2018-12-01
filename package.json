@@ -1,6 +1,6 @@
 {
     "name": "@purtuga/common",
-    "version": "3.4.0",
+    "version": "3.5.0",
     "description": "Common stuff that I use to build my stuff",
     "main": "src/index.js",
     "module": "dist/common.esm.min.js",
