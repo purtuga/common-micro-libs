@@ -31,6 +31,8 @@ export const toString                 = functionBindCall(Object.prototype.toStri
 export const isObject                 = obj => toString(obj) === "[object Object]";
 export const isString                 = obj => toString(obj) === "[object String]";
 export const isFunction               = obj => toString(obj) === "[object Function]";
+export const isNull                   = obj => toString(obj) === "[object Null]";
+export const isUndefined              = obj => toString(obj) === "[object Undefined]";
 export const objectDefineProperty     = Object.defineProperty;
 export const objectDefineProperties   = Object.defineProperties;
 export const objectKeys               = Object.keys;
@@ -86,3 +88,4 @@ export const hasAttribute = functionBindCall(HTMLElementPrototype.hasAttribute);
 export const getAttribute = functionBindCall(HTMLElementPrototype.getAttribute);
 export const setAttribute = functionBindCall(HTMLElementPrototype.setAttribute);
 export const removeAttribute = functionBindCall(HTMLElementPrototype.removeAttribute);
+export const isDocFragment = node => toString(node) === "[object DocumentFragment]";

@@ -6,7 +6,7 @@
  *
  * @returns {Node|DocumentFragment}
  */
-export function domInsertBefore(newNode, referenceNode) {
+export function domInsertAfter(newNode, referenceNode) {
     const parentNode = referenceNode.parentNode;
 
     if (!referenceNode.nextSibling) {
@@ -17,5 +17,5 @@ export function domInsertBefore(newNode, referenceNode) {
 
     return newNode;
 }
-export default domInsertBefore;
+export default domInsertAfter;
 
