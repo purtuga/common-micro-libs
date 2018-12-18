@@ -36,7 +36,7 @@ export const isUndefined              = obj => toString(obj) === "[object Undefi
 export const objectDefineProperty     = Object.defineProperty;
 export const objectDefineProperties   = Object.defineProperties;
 export const objectKeys               = Object.keys;
-export const defineProperty = (obj, prop, value, getter, setter, configurable = true, enumerable = false, writable = true) => {
+export const getPropertyDescriptor    = (value, getter, setter, configurable = true, enumerable = false, writable = true) => {
     const descriptor = {
         configurable,
         enumerable
@@ -49,9 +49,10 @@ export const defineProperty = (obj, prop, value, getter, setter, configurable = 
         descriptor.writable = writable;
         descriptor.value = value;
     }
-
-    objectDefineProperty(obj, prop, descriptor);
-
+    return descriptor;
+};
+export const defineProperty = (obj, prop, value, getter, setter, configurable = true, enumerable = false, writable = true) => {
+    objectDefineProperty(obj, prop, getPropertyDescriptor(value, getter, setter, configurable, enumerable, writable));
     return obj;
 };
 
