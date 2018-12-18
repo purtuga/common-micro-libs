@@ -77,6 +77,13 @@ export const SymbolIterator = "undefined" !== typeof Symbol && Symbol.iterator ?
 
 
 // DOM ===============================================================================
+// *** In a NodeJS env - set HTMLElement to an empty object ***
+if (process.env.NODE_ENV !== "production") {
+    if (typeof HTMLElement === "undefined") {
+        global.HTMLElement = class {}; // eslint-disable-line
+        global.document = class {};
+    }
+}
 const HTMLElementPrototype = HTMLElement.prototype;
 export const doc = document;
 export const head = doc.head;
