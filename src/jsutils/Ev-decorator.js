@@ -1,4 +1,5 @@
 import  {Ev} from "./Ev.js";
+import {getElementDescriptor} from "./decorator-utils.js";
 
 //========================================================================
 const MEMBERS = ["on", "emit", "clear"];
@@ -11,12 +12,14 @@ const MEMBERS = ["on", "emit", "clear"];
 export function eventful() {
     return function (classDescriptor) {
         MEMBERS.forEach(memberName => {
-            classDescriptor.elements.push({
-                key: memberName,
-                kind: "method",
-                placement: "prototype",
-                descriptor: Object.getOwnPropertyDescriptor(Ev.prototype, memberName)
-            });
+            classDescriptor.elements.push(
+                getElementDescriptor(
+                    "method",
+                    memberName,
+                    "prototype",
+                    Object.getOwnPropertyDescriptor(Ev.prototype, memberName)
+                )
+            );
         });
         return classDescriptor;
     }
