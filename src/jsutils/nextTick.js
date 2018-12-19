@@ -63,13 +63,23 @@ const flushQueue = () => {
  *
  * @param {Function} callback
  */
-nextTick.queue = callback => {
+function queueForNextTick(callback) {
     queuedCallbacks.add(callback);
     if (!isQueued) {
         isQueued = true;
         nextTick(flushQueue);
     }
-};
+}
 
+/**
+ * Queue a callback for next tick
+ * @type {queueForNextTick}
+ */
+nextTick.queue = queueForNextTick;
+
+//-----------------------------------------------------------[ EXPORTS ]---
 export default nextTick;
-export { nextTick };
+export {
+    nextTick,
+    queueForNextTick
+}
