@@ -83,7 +83,11 @@ if (process.env.NODE_ENV !== "production") {
         global.HTMLElement = class {}; // eslint-disable-line
         global.document = class {};
     }
+    consoleWarn("DEPRECATION WARNING: DOM aliases exposed via '@purtuga/common/src/jsutils/runtime-aliases.js' no longer valid. Use '@purtuga/common/src/domutils/dom-runtime-aliases.js' instead");
 }
+// *!*!*!*!*!      IMPORTANT      *!*!*!*!*!!*
+//      THESE ARE DEPRECATED AND MOVED TO
+//      src/domutils/dom-runtime-aliases.js
 const HTMLElementPrototype = HTMLElement.prototype;
 export const doc = document;
 export const head = doc.head;
