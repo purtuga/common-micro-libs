@@ -14,9 +14,7 @@ export function eventful() {
         MEMBERS.forEach(memberName => {
             classDescriptor.elements.push(
                 getElementDescriptor(
-                    "method",
                     memberName,
-                    "prototype",
                     Object.getOwnPropertyDescriptor(Ev.prototype, memberName)
                 )
             );
