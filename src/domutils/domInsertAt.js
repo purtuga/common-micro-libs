@@ -12,7 +12,7 @@ import {insertBefore, appendChild} from "../jsutils/runtime-aliases.js";
 export function domInsertAt(newNode, parentElement, position = -1) {
     if (newNode && parentElement) {
         // If position is -1 or its a number larger than the number of nodes
-        if (position === -1 || parentElement.children.length >= position) {
+        if (position === -1 || position >= parentElement.children.length) {
             appendChild(parentElement, newNode);
         } else {
             insertBefore(parentElement, newNode, parentElement.children.item(position));
