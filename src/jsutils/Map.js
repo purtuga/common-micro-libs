@@ -82,7 +82,7 @@ objectDefineProperties(FakeMap.prototype, {
     },
     forEach: {
         value(cb, thisArg) {
-            this._.keys.forEach((item, i) => cb(this._.values[i], item, this), thisArg);
+            this._.keys.forEach((item, i) => cb.call(thisArg, this._.values[i], item));
         }
     },
     [SymbolIterator]: {
