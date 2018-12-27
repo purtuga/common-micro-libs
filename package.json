@@ -1,6 +1,6 @@
 {
     "name": "@purtuga/common",
-    "version": "3.10.1",
+    "version": "3.11.0",
     "description": "Common stuff that I use to build my stuff",
     "main": "src/index.js",
     "module": "src/index.js",
