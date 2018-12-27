@@ -10,7 +10,7 @@ import domMatches from './domMatches'
  * @param {HTMLElement} ele
  * @param {String} [selector]
  *
- * @return [Array]
+ * @return {Array}
  */
 export function domChildren(ele, selector){
     var children = Array.prototype.slice.call((ele.childNodes || []), 0).filter(function(childNode){
