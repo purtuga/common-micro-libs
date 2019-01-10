@@ -38,6 +38,8 @@ const CSS_CLASS_TITLE   = `${CSS_CLASS_BASE}-title`;
  * @param {String} [options.popupWidth="full"]
  *  A CSS value for the width of the popup, or the word `full` if wanting
  *  the width of the popup to be as wide as the element to which it is attached
+ * @param {String} [options.popupZIndex=null]
+ *  If set, will be given to the Popup as the CSS zIndex value
  *
  * @triggers Picker#item-selected
  * @triggers Picker#selection-cleared
@@ -55,7 +57,7 @@ var Picker = {
 
         PRIVATE.set(this, inst);
 
-        var popup       = inst.popup    = Popup.create();
+        var popup       = inst.popup    = Popup.create({ zIndex: opt.popupZIndex });
         var menu        = inst.menu     = Menu.create();
         var $popupUI    = popup.getEle();
         var $ui         = this.$ui = parseHTML(
@@ -234,6 +236,7 @@ Picker.defaults = {
     choices:    null,
     selected:   "",
     popupWidth: "full",
+    popupZIndex: null,
     showClear:  true,
     focusClass: "my-menu-selected",
     labels:     {

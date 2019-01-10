@@ -37,8 +37,9 @@ var
  */
     Popup = {
         init: function(options){
+            const opt = objectExtend({}, this.getFactory().defaults, options);
             let inst = {
-                opt:            objectExtend({}, this.getFactory().defaults, options),
+                opt,
                 $ele:           null,
                 domListeners:   [],
                 scrollTop:      0
@@ -48,12 +49,16 @@ var
 
             this.$ui = parseHTML(popupTemplate).firstChild;
 
-            if (inst.opt.content) {
-                this.setContent(inst.opt.content);
+            if (opt.zIndex) {
+                this.$ui.style.zIndex = opt.zIndex;
             }
 
-            if (inst.opt.attachTo) {
-                this.attachTo(inst.opt.attachTo);
+            if (opt.content) {
+                this.setContent(opt.content);
+            }
+
+            if (opt.attachTo) {
+                this.attachTo(opt.attachTo);
             }
 
             this.onDestroy(removeAllDomListeners.bind(this));
@@ -157,7 +162,8 @@ Popup.defaults = {
     content:    null,
     attachTo:   null,
     position:   null,
-    onHide:     null
+    onHide:     null,
+    zIndex:     null
 };
 
 export default Popup;
